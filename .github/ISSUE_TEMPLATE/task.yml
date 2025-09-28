@@ -1,0 +1,8 @@
+name: Task
+description: Small scoped work item
+labels: [task]
+body:
+  - type: textarea
+    id: scope
+    attributes: { label: Scope }
+    validations: { required: true }
