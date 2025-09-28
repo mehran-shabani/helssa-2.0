@@ -1,0 +1,11 @@
+name: Feature request
+description: Propose a new capability
+labels: [enhancement]
+body:
+  - type: textarea
+    id: summary
+    attributes: { label: Summary, placeholder: What and why? }
+    validations: { required: true }
+  - type: textarea
+    id: acceptance
+    attributes: { label: Acceptance Criteria (DoD) }

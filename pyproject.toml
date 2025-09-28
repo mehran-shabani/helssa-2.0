@@ -1,0 +1,60 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "helssa"
+version = "2.0.0"
+description = "Helssa 2.0 backend service"
+readme = "README.md"
+authors = [{ name = "Helssa Team" }]
+requires-python = ">=3.12"
+license = { text = "MIT" }
+classifiers = [
+  "Framework :: Django",
+  "Programming Language :: Python :: 3.12",
+]
+dependencies = [
+  "django>=5.0",
+  "djangorestframework",
+  "drf-spectacular",
+  "django-cors-headers",
+  "dj-database-url",
+  "python-dotenv",
+  "celery",
+  "redis",
+  "gunicorn",
+  "uvicorn[standard]",
+  "whitenoise",
+  "psycopg[binary]",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest",
+  "pytest-django",
+  "factory_boy",
+  "freezegun",
+  "ruff",
+  "isort",
+  "commitizen",
+]
+
+[tool.setuptools.packages.find]
+include = ["config", "apps", "core", "analytics", "tests"]
+
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "N", "ASYNC", "B", "Q", "C90"]
+[tool.isort]
+profile = "black"
+line_length = 100
+
+[tool.commitizen]
+name = "cz_conventional_commits"
+version = "2.0.0"
+version_files = ["pyproject.toml:version"]
+tag_format = "v$version"
+update_changelog_on_bump = true
