@@ -8,13 +8,15 @@ pytestmark = pytest.mark.django_db
 
 def _fake_celery(response):
     """
-    ایجاد یک شیء شبیه‌سازی‌شده از Celery برای آزمایش که متد `control.ping` آن همیشه مقدار داده‌شده را برمی‌گرداند.
+    ایجاد یک شیء شبیه‌سازی‌شده از Celery برای آزمایش که متد `control.ping` آن همیشه مقدار
+    داده‌شده را برمی‌گرداند.
     
     Parameters:
         response: پاسخ ثابتی که متد `control.ping` باید بازگرداند (مثلاً `[{"ok": True}]` یا `[]`).
     
     Returns:
-        mock_celery: شیء شبیه‌سازی‌شده‌ای با ویژگی `control` که متد `ping(timeout: float = 1.0)` را دارد و مقدار `response` را برمی‌گرداند.
+        mock_celery: شیء شبیه‌سازی‌شده‌ای با ویژگی `control` که متد `ping(timeout: float = 1.0)` را
+        دارد و مقدار `response` را برمی‌گرداند.
     """
     class _Control:
         def ping(self, timeout: float = 1.0):
@@ -28,7 +30,8 @@ def _auth_client(user):
     یک نمونهٔ APIClient را ساخته و آن را به‌عنوان کاربر مشخص شده احراز هویت می‌کند.
     
     Parameters:
-        user (django.contrib.auth.models.User): نمونهٔ کاربر دجانگو که درخواست‌ها باید به‌صورت آن کاربر اجرا شوند.
+        user (django.contrib.auth.models.User): نمونهٔ کاربر دجانگو که درخواست‌ها باید
+        به‌صورت آن کاربر اجرا شوند.
     
     Returns:
         APIClient: نمونهٔ DRF `APIClient` که با کاربر داده‌شده احراز هویت شده است.
@@ -48,14 +51,16 @@ def test_system_health_public_headers():
 
 def test_system_ready_requires_staff(django_user_model):
     """
-    بررسی می‌کند که endpoint سلامت/آمادگی سیستم (/api/v1/system/ready) فقط برای کاربران دارای دسترسی سطح مدیر (staff/superuser) قابل دسترسی باشد.
+    بررسی می‌کند که endpoint سلامت/آمادگی سیستم (/api/v1/system/ready) فقط برای کاربران دارای
+    دسترسی سطح مدیر (staff/superuser) قابل دسترسی باشد.
     
     جزئیات:
     - درخواست بدون احراز هویت باید با کد وضعیت 401 یا 403 رد شود.
     - درخواست از طرف یک کاربر عادی (non-staff) پس از احراز هویت باید با کد وضعیت 403 رد شود.
     
     Parameters:
-        django_user_model: فیکچر یا مدل کاربر Django که برای ایجاد کاربرهای آزمایشی (مثلاً کاربر عادی) استفاده می‌شود.
+        django_user_model: فیکچر یا مدل کاربر Django که برای ایجاد کاربرهای آزمایشی (مثلاً کاربر
+        عادی) استفاده می‌شود.
     """
     client = APIClient()
     assert client.get("/api/v1/system/ready").status_code in {401, 403}

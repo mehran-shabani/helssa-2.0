@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from django.utils.dateparse import parse_date
 from rest_framework import permissions, serializers, viewsets
+from rest_framework.exceptions import ValidationError
 from rest_framework.pagination import PageNumberPagination
 
 from .models import Event, StatsDaily
@@ -42,33 +43,39 @@ class DailyStatsViewSet(viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self):  # noqa: D401
         """
-        بازگرداندن queryset از مدل آمار روزانه که در صورت وجود، براساس پارامترهای کوئری `from` و `to` بر اساس فیلتر تاریخ محدود شده است.
+        بازگرداندن queryset از مدل آمار روزانه که در صورت وجود، براساس پارامترهای کوئری
+        `from` و `to` بر اساس فیلتر تاریخ محدود شده است.
         
         پارامترها:
-            - این متد پارامتر مستقیمی دریافت نمی‌کند؛ از `self.request.query_params` پارامترهای `from` و `to` را می‌خواند. هر پارامتر در صورت وجود با `parse_date` تجزیه می‌شود و در صورت موفقیت فیلتر مناسب اعمال می‌گردد. مقادیر نامعتبر یا غایب نادیده گرفته می‌شوند.
+            - این متد پارامتر مستقیمی دریافت نمی‌کند؛ از `self.request.query_params`
+            پارامترهای `from` و `to` را می‌خواند. هر پارامتر در صورت وجود با `parse_date`
+            تجزیه می‌شود و در صورت موفقیت فیلتر مناسب اعمال می‌گردد.
+            مقادیر نامعتبر ValidationError ایجاد می‌کنند.
         
         Returns:
-            QuerySet: یک QuerySet از مدل `StatsDaily` محدود شده به روزهای بزرگتر یا مساوی تاریخ `from` و/یا کوچکتر یا مساوی تاریخ `to` در صورت ارائه و معتبر بودن آن‌ها.
+            QuerySet: یک QuerySet از مدل `StatsDaily` محدود شده به روزهای بزرگتر یا
+            مساوی تاریخ `from` و/یا کوچکتر یا مساوی تاریخ `to` در صورت ارائه و معتبر
+            بودن آن‌ها.
+        
+        Raises:
+            ValidationError: در صورت ارسال فرمت تاریخ نامعتبر برای پارامترهای
+            `from` یا `to`.
         """
         qs = super().get_queryset()
-# at the top of analytics/api.py, alongside your other DRF imports
-from rest_framework import permissions, serializers, viewsets
-from rest_framework.exceptions import ValidationError
-
-# …later, inside your get_queryset (around lines 45–54):
-
+        
         from_param = self.request.query_params.get("from")
         to_param = self.request.query_params.get("to")
-        if from_param:
-            parsed_from = parse_date(from_param)
-            if not parsed_from:
-                raise ValidationError({"from": "فرمت تاریخ باید YYYY-MM-DD باشد."})
+        
+        if from_param and not (parsed_from := parse_date(from_param)):
+            raise ValidationError({"from": "فرمت تاریخ باید YYYY-MM-DD باشد."})
+        elif from_param:
             qs = qs.filter(day__gte=parsed_from)
-        if to_param:
-            parsed_to = parse_date(to_param)
-            if not parsed_to:
-                raise ValidationError({"to": "فرمت تاریخ باید YYYY-MM-DD باشد."})
+            
+        if to_param and not (parsed_to := parse_date(to_param)):
+            raise ValidationError({"to": "فرمت تاریخ باید YYYY-MM-DD باشد."})
+        elif to_param:
             qs = qs.filter(day__lte=parsed_to)
+            
         return qs
 
 
@@ -80,12 +87,16 @@ class EventViewSet(viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self):  # noqa: D401
         """
-        QuerySet پایه را آماده می‌کند و در صورت وجود پارامتر query با نام "name" آن را بر اساس مقدار برابر فیلتر می‌کند.
+        QuerySet پایه را آماده می‌کند و در صورت وجود پارامتر query با نام "name"
+        آن را بر اساس مقدار برابر فیلتر می‌کند.
         
-        این متد مقدار "name" را از request.query_params می‌خواند و اگر مقدار داده شده وجود داشته باشد، QuerySet را به رکوردهایی محدود می‌کند که فیلد `name` برابر آن مقدار باشند.
+        این متد مقدار "name" را از request.query_params می‌خواند و اگر مقدار داده شده
+        وجود داشته باشد، QuerySet را به رکوردهایی محدود می‌کند که فیلد `name` برابر
+        آن مقدار باشند.
         
         Returns:
-            QuerySet: مجموعه نتایج فیلترشده بر اساس `name` یا QuerySet اصلی در صورت عدم وجود پارامتر.
+            QuerySet: مجموعه نتایج فیلترشده بر اساس `name` یا QuerySet اصلی در صورت
+            عدم وجود پارامتر.
         """
         qs = super().get_queryset()
         name = self.request.query_params.get("name")

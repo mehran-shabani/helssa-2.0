@@ -1,3 +1,34 @@
+Metadata-Version: 2.4
+Name: helssa
+Version: 2.0.0
+Summary: Helssa 2.0 backend service
+Author: Helssa Team
+License: MIT
+Classifier: Framework :: Django
+Classifier: Programming Language :: Python :: 3.12
+Requires-Python: >=3.12
+Description-Content-Type: text/markdown
+Requires-Dist: django>=5.0
+Requires-Dist: djangorestframework
+Requires-Dist: drf-spectacular
+Requires-Dist: django-cors-headers
+Requires-Dist: dj-database-url
+Requires-Dist: python-dotenv
+Requires-Dist: celery
+Requires-Dist: redis
+Requires-Dist: gunicorn
+Requires-Dist: uvicorn[standard]
+Requires-Dist: whitenoise
+Requires-Dist: psycopg[binary]
+Provides-Extra: dev
+Requires-Dist: pytest; extra == "dev"
+Requires-Dist: pytest-django; extra == "dev"
+Requires-Dist: factory_boy; extra == "dev"
+Requires-Dist: freezegun; extra == "dev"
+Requires-Dist: ruff; extra == "dev"
+Requires-Dist: isort; extra == "dev"
+Requires-Dist: commitizen; extra == "dev"
+
 # Helssa 2.0
 
 [![CI](https://github.com/helssa/helssa-2.0/actions/workflows/ci.yml/badge.svg)](https://github.com/helssa/helssa-2.0/actions/workflows/ci.yml)

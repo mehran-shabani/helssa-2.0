@@ -33,7 +33,10 @@ def test_events_filter_and_limit(django_user_model):
     """
     قابلیت فیلتر بر اساس نام و محدودسازی تعداد نتایج در endpoint رویدادها را تست می‌کند.
     
-    این تست یک کاربر سوپر‌یوزر ایجاد و با آن احراز هویت می‌کند، پنج رویداد با نام "pay_success" و پراپرتی‌های متفاوت می‌سازد، سپس درخواست به /api/v1/analytics/events/ با پارامترهای نام و limit ارسال می‌کند و بررسی می‌کند که پاسخ با کد 200 بازگردد، تعداد نتایج حداکثر برابر با مقدار limit باشد و همهٔ آیتم‌های بازگشتی نام "pay_success" داشته باشند.
+    این تست یک کاربر سوپر‌یوزر ایجاد و با آن احراز هویت می‌کند، پنج رویداد با نام "pay_success" و
+    پراپرتی‌های متفاوت می‌سازد، سپس درخواست به /api/v1/analytics/events/ با پارامترهای نام و limit
+    ارسال می‌کند و بررسی می‌کند که پاسخ با کد 200 بازگردد، تعداد نتایج حداکثر برابر با مقدار limit
+    باشد و همهٔ آیتم‌های بازگشتی نام "pay_success" داشته باشند.
     """
     user = django_user_model.objects.create_superuser(
         username="staff2", email="staff2@example.com", password="pass"
@@ -47,5 +50,5 @@ def test_events_filter_and_limit(django_user_model):
     response = client.get("/api/v1/analytics/events/?name=pay_success&limit=3")
     payload = response.json()
     assert response.status_code == 200
-    assert len(payload["results"]) <= 3
+    assert len(payload["results"]) == 3
     assert all(item["name"] == "pay_success" for item in payload["results"])
