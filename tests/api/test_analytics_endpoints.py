@@ -11,14 +11,6 @@ pytestmark = pytest.mark.django_db
 
 
 def test_daily_stats_requires_staff_and_filters(django_user_model):
-    """
-    دسترسی و فیلترینگ نقطه‌پایان آمار روزانه را آزمایش می‌کند.
-    
-    این تست اطمینان می‌دهد که درخواست به /api/v1/analytics/daily/ برای کاربر ناشناس مجاز نیست، سپس با یک سوپریوزر احراز هویت انجام می‌دهد، دو رکورد StatsDaily برای روزهای مختلف ایجاد می‌کند و با پارامترهای from/to روی یک روز مشخص درخواست می‌فرستد؛ انتظار برگرداندن دقیقاً یک رکورد فیلترشده است که مقدار `pay_success` آن برابر 3 باشد.
-    
-    Parameters:
-        django_user_model: فیکسچر pytest که مدل کاربر را فراهم می‌کند و برای ایجاد سوپریوزر استفاده می‌شود.
-    """
     client = APIClient()
     assert client.get("/api/v1/analytics/daily/").status_code in {401, 403}
 
@@ -39,13 +31,12 @@ def test_daily_stats_requires_staff_and_filters(django_user_model):
 
 def test_events_filter_and_limit(django_user_model):
     """
-    این تست صحت فیلتر کردن نتایج بر اساس نام و محدودسازی تعداد بازگشتی در endpoint رویدادها را بررسی می‌کند.
+    قابلیت فیلتر بر اساس نام و محدودسازی تعداد نتایج در endpoint رویدادها را تست می‌کند.
     
-    توضیحات:
-    تست یک کاربر سوپر‌یوزر ایجاد و با آن کلاینت را احراز هویت می‌کند، چند رویداد با همین نام تولید می‌کند، سپس با پارامترهای query شامل `name=pay_success` و `limit=3` به مسیر `/api/v1/analytics/events/` درخواست می‌زند و انتظار دارد که پاسخ موفق باشد، دقیقاً سه مورد در فیلد `results` بازگردد و همهٔ آیتم‌های بازگشتی نام `pay_success` داشته باشند.
-    
-    Parameters:
-        django_user_model: فیکسچر مدل کاربر برای ایجاد یک سوپر‌یوزر جهت احراز هویت درخواست‌ها.
+    این تست یک کاربر سوپر‌یوزر ایجاد و با آن احراز هویت می‌کند، پنج رویداد با نام "pay_success" و
+    پراپرتی‌های متفاوت می‌سازد، سپس درخواست به /api/v1/analytics/events/ با پارامترهای نام و limit
+    ارسال می‌کند و بررسی می‌کند که پاسخ با کد 200 بازگردد، تعداد نتایج حداکثر برابر با مقدار limit
+    باشد و همهٔ آیتم‌های بازگشتی نام "pay_success" داشته باشند.
     """
     user = django_user_model.objects.create_superuser(
         username="staff2", email="staff2@example.com", password="pass"
