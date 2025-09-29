@@ -51,16 +51,24 @@ class DailyStatsViewSet(viewsets.ReadOnlyModelViewSet):
             QuerySet: یک QuerySet از مدل `StatsDaily` محدود شده به روزهای بزرگتر یا مساوی تاریخ `from` و/یا کوچکتر یا مساوی تاریخ `to` در صورت ارائه و معتبر بودن آن‌ها.
         """
         qs = super().get_queryset()
+# at the top of analytics/api.py, alongside your other DRF imports
+from rest_framework import permissions, serializers, viewsets
+from rest_framework.exceptions import ValidationError
+
+# …later, inside your get_queryset (around lines 45–54):
+
         from_param = self.request.query_params.get("from")
         to_param = self.request.query_params.get("to")
         if from_param:
             parsed_from = parse_date(from_param)
-            if parsed_from:
-                qs = qs.filter(day__gte=parsed_from)
+            if not parsed_from:
+                raise ValidationError({"from": "فرمت تاریخ باید YYYY-MM-DD باشد."})
+            qs = qs.filter(day__gte=parsed_from)
         if to_param:
             parsed_to = parse_date(to_param)
-            if parsed_to:
-                qs = qs.filter(day__lte=parsed_to)
+            if not parsed_to:
+                raise ValidationError({"to": "فرمت تاریخ باید YYYY-MM-DD باشد."})
+            qs = qs.filter(day__lte=parsed_to)
         return qs
 
 
