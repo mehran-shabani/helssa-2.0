@@ -43,23 +43,15 @@ class DailyStatsViewSet(viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self):  # noqa: D401
         """
-        بازگرداندن queryset از مدل آمار روزانه که در صورت وجود، براساس پارامترهای کوئری
-        `from` و `to` بر اساس فیلتر تاریخ محدود شده است.
+        Queryset مدل آمار روزانه را بر اساس پارامترهای تاریخ پرس‌وجو فیلتر می‌کند.
         
-        پارامترها:
-            - این متد پارامتر مستقیمی دریافت نمی‌کند؛ از `self.request.query_params`
-            پارامترهای `from` و `to` را می‌خواند. هر پارامتر در صورت وجود با `parse_date`
-            تجزیه می‌شود و در صورت موفقیت فیلتر مناسب اعمال می‌گردد.
-            مقادیر نامعتبر ValidationError ایجاد می‌کنند.
+        این متد پارامترهای اختیاری `from` و `to` را از self.request.query_params می‌خواند. هر پارامتر در صورت وجود با `parse_date` تجزیه می‌شود؛ اگر تجزیه ناموفق باشد برای همان پارامتر ValidationError با پیام فرمت تاریخ مورد انتظار (`YYYY-MM-DD`) برگردانده می‌شود. اگر تجزیه موفق باشد، به‌ترتیب فیلترهای `day__gte` (برای `from`) و `day__lte` (برای `to`) روی queryset اعمال می‌گردد و queryset نهایی بازگردانده می‌شود.
         
         Returns:
-            QuerySet: یک QuerySet از مدل `StatsDaily` محدود شده به روزهای بزرگتر یا
-            مساوی تاریخ `from` و/یا کوچکتر یا مساوی تاریخ `to` در صورت ارائه و معتبر
-            بودن آن‌ها.
+            QuerySet: QuerySet فیلترشده‌ی `StatsDaily` مطابق پارامترهای تاریخ ارائه‌شده.
         
         Raises:
-            ValidationError: در صورت ارسال فرمت تاریخ نامعتبر برای پارامترهای
-            `from` یا `to`.
+            ValidationError: اگر مقدار `from` یا `to` موجود باشد اما قابل تجزیه به تاریخ با فرمت `YYYY-MM-DD` نباشد.
         """
         qs = super().get_queryset()
         
@@ -87,16 +79,12 @@ class EventViewSet(viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self):  # noqa: D401
         """
-        QuerySet پایه را آماده می‌کند و در صورت وجود پارامتر query با نام "name"
-        آن را بر اساس مقدار برابر فیلتر می‌کند.
+        QuerySet مربوط به ViewSet را بازمی‌گرداند و در صورت وجود پارامتر کوئری `name` آن را بر اساس برابری فیلد `name` محدود می‌کند.
         
-        این متد مقدار "name" را از request.query_params می‌خواند و اگر مقدار داده شده
-        وجود داشته باشد، QuerySet را به رکوردهایی محدود می‌کند که فیلد `name` برابر
-        آن مقدار باشند.
+        این متد QuerySet پایه را از سوپرجلس گرفته و اگر پارامتر کوئری `name` در request موجود باشد، خروجی را به رکوردهایی که مقدار فیلد `name` دقیقاً برابر آن مقدار هستند محدود می‌کند.
         
         Returns:
-            QuerySet: مجموعه نتایج فیلترشده بر اساس `name` یا QuerySet اصلی در صورت
-            عدم وجود پارامتر.
+            QuerySet: مجموعه نتایج فیلترشده بر اساس مقدار `name` در صورت وجود، در غیر این صورت QuerySet پایه.
         """
         qs = super().get_queryset()
         name = self.request.query_params.get("name")
