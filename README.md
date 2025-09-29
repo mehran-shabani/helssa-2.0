@@ -23,6 +23,17 @@ python manage.py runserver 0.0.0.0:8000
 
 Visit [`/health`](http://localhost:8000/health) for a readiness probe.
 
+## Endpoints
+- `GET /health` → fast path (no database access)
+- `GET /api/v1/system/health` → public status with version metadata
+- `GET /api/v1/system/ready` → readiness check for DB/cache/Celery (staff-only)
+- `GET /api/v1/analytics/daily` → paginated daily aggregates (staff-only)
+- `GET /api/v1/analytics/events` → paginated analytics events (staff-only)
+
+### API Docs
+- OpenAPI schema: `/api/schema/`
+- Swagger UI: `/api/docs/`
+
 ## Make targets
 - `make install` – install dependencies and set up git hooks
 - `make run` – start the Django development server
