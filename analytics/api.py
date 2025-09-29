@@ -41,6 +41,15 @@ class DailyStatsViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = StatsDaily.objects.all().order_by("-day")
 
     def get_queryset(self):  # noqa: D401
+        """
+        پرس‌وجوی پایه را بر اساس پارامترهای کوئری HTTP `from` و `to` فیلتر می‌کند.
+        
+        پارامترها:
+        - از پارامترهای کوئری `from` و `to` برای محدود کردن بازه تاریخ استفاده می‌شود. هر پارامتر با `django.utils.dateparse.parse_date` تجزیه می‌شود (فرمت منتظر: YYYY-MM-DD). در صورت موفقیت‌آمیز بودن تجزیه، به ترتیب فیلترهای `day__gte` و `day__lte` روی QuerySet اعمال می‌گردد. پارامترهای نامعتبر یا غیریکسان نادیده گرفته می‌شوند.
+        
+        Returns:
+        - QuerySet: همان QuerySet ورودی پس از اعمال فیلترهای تاریخ (در صورت وجود پارامترهای معتبر).
+        """
         qs = super().get_queryset()
         from_param = self.request.query_params.get("from")
         to_param = self.request.query_params.get("to")
@@ -62,6 +71,15 @@ class EventViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Event.objects.all().order_by("-at", "-id")
 
     def get_queryset(self):  # noqa: D401
+        """
+        مجموعه QuerySet مربوط به Eventها را تهیه می‌کند و در صورت وجود پارامتر query با نام "name" آن را بر اساس نام فیلتر می‌کند.
+        
+        شرح:
+            ابتدا QuerySet پیش‌فرض والد را دریافت می‌کند. سپس پارامتر query با کلید "name" را از درخواست می‌خواند و در صورت وجود، QuerySet را محدود به رویدادهایی می‌کند که فیلد `name` برابر مقدار ارائه‌شده باشند.
+        
+        Returns:
+            QuerySet: مجموعه‌ای از شیءهای Event (مرتب‌شده طبق queryset پیش‌فرض کلاس) که در صورت مشخص شدن پارامتر `name` تنها شامل Eventهایی با نام برابر آن مقدار است.
+        """
         qs = super().get_queryset()
         name = self.request.query_params.get("name")
         if name:
