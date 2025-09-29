@@ -1,12 +1,22 @@
 from django.contrib import admin
-from django.urls import path
+from django.urls import include, path
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
+from rest_framework.routers import DefaultRouter
 
+from analytics.api import DailyStatsViewSet, EventViewSet
 from apps.common.views import health
+from apps.system.views import SystemHealthView, SystemReadyView
+
+router = DefaultRouter()
+router.register(r"analytics/daily", DailyStatsViewSet, basename="analytics-daily")
+router.register(r"analytics/events", EventViewSet, basename="analytics-events")
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("schema/", SpectacularAPIView.as_view(), name="schema"),
-    path("docs/", SpectacularSwaggerView.as_view(url_name="schema"), name="docs"),
     path("health", health, name="health"),
+    path("api/v1/system/health", SystemHealthView.as_view(), name="system-health"),
+    path("api/v1/system/ready", SystemReadyView.as_view(), name="system-ready"),
+    path("api/v1/", include(router.urls)),
+    path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
+    path("api/docs/", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"),
 ]
