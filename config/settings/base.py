@@ -33,6 +33,7 @@ INSTALLED_APPS = [
     "apps.common",
     "apps.system",
     "analytics",
+    "telemedicine",
 ]
 
 MIDDLEWARE = [
@@ -126,6 +127,13 @@ CELERY_RESULT_SERIALIZER = "json"
 #         "schedule": 24 * 60 * 60,
 #     }
 # }
+
+PAYMENT_GATEWAY = os.getenv("PAYMENT_GATEWAY", "bitpay")
+BITPAY_WEBHOOK_SECRET = os.getenv("BITPAY_WEBHOOK_SECRET", "")
+BITPAY_SIGNATURE_HEADER = os.getenv("BITPAY_SIGNATURE_HEADER", "X-Signature")
+BITPAY_TIMESTAMP_HEADER = os.getenv("BITPAY_TIMESTAMP_HEADER", "X-Timestamp")
+PAY_SIG_MAX_SKEW_SECONDS = int(os.getenv("PAY_SIG_MAX_SKEW_SECONDS", "300"))
+BITPAY_VERIFY_URL = os.getenv("BITPAY_VERIFY_URL", "https://bitpay.example/verify")
 
 LOGGING = {
     "version": 1,
