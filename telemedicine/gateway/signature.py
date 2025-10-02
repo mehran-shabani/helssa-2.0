@@ -19,7 +19,9 @@ def verify_signature(headers, body):
         ts_int = int(timestamp)
     except ValueError:
         return False, "bad_timestamp"
-    if abs(int(time.time()) - ts_int) > settings.PAY_SIG_MAX_SKEW_SECONDS:
+    time_diff = int(time.time()) - ts_int
+    # Allow small clock skew in the past, but reject future timestamps
+    if time_diff < -30 or time_diff > settings.PAY_SIG_MAX_SKEW_SECONDS:
         return False, "skew"
     body_bytes = body if isinstance(body, bytes) else body.encode("utf-8")
     expected = hmac.new(
