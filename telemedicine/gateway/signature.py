@@ -9,8 +9,8 @@ def verify_signature(headers, body):
     if not secret:
         return False, "missing_secret"
     sig_name, ts_name = settings.BITPAY_SIGNATURE_HEADER, settings.BITPAY_TIMESTAMP_HEADER
-    signature = headers.get(sig_name) or headers.get(sig_name.lower())
-    timestamp = headers.get(ts_name) or headers.get(ts_name.lower())
+    signature = headers.get(sig_name)
+    timestamp = headers.get(ts_name)
     if not signature:
         return False, "missing_signature"
     if not timestamp:
