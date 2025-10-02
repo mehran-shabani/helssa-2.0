@@ -21,6 +21,7 @@ dependencies = [
   "django-cors-headers",
   "dj-database-url",
   "python-dotenv",
+  "requests",
   "celery",
   "redis",
   "gunicorn",
@@ -41,7 +42,7 @@ dev = [
 ]
 
 [tool.setuptools.packages.find]
-include = ["config", "apps", "core", "analytics", "tests"]
+include = ["config", "apps", "core", "analytics", "telemedicine", "tests"]
 
 [tool.ruff]
 line-length = 100
