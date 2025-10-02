@@ -4,7 +4,7 @@ import hashlib
 import json
 import logging
 from datetime import datetime
-from typing import Any, Dict
+from typing import Any
 
 from django.conf import settings
 from django.core.cache import cache
@@ -69,28 +69,46 @@ def _parse_dt(raw: Any) -> datetime | None:
     return None
 
 
-def _emit_success(payload: Dict[str, Any], source: str) -> None:
+def _emit_success(payload: dict[str, Any], source: str) -> None:
     data = payload.get("data") if isinstance(payload.get("data"), dict) else payload
     status = str(data.get("status") or payload.get("status") or "").lower()
     if status not in SUCCESS_STATUSES:
         return
-    created = _parse_dt(data.get("created_at") or payload.get("created_at") or data.get("invoice_created_at"))
+    created = _parse_dt(
+        data.get("created_at")
+        or payload.get("created_at")
+        or data.get("invoice_created_at")
+    )
     finished = _parse_dt(
-        data.get("success_at") or data.get("confirmed_at") or data.get("paid_at") or payload.get("confirmed_at")
+        data.get("success_at")
+        or data.get("confirmed_at")
+        or data.get("paid_at")
+        or payload.get("confirmed_at")
     ) or timezone.now()
     created = created or finished
     if not created:
         return
     amount = data.get("amount") or data.get("price") or data.get("total")
-    currency = data.get("currency") or data.get("price_currency") or data.get("currency_code")
+    currency = (
+        data.get("currency")
+        or data.get("price_currency")
+        or data.get("currency_code")
+    )
     if isinstance(amount, dict):
         currency = amount.get("currency") or currency
         amount = amount.get("value") or amount.get("amount")
     tat_ms = max(int((finished - created).total_seconds() * 1000), 0)
-    _emit("pay_success", tat_ms=tat_ms, amount=amount, currency=currency, gateway=settings.PAYMENT_GATEWAY, source=source)
+    _emit(
+        "pay_success",
+        tat_ms=tat_ms,
+        amount=amount,
+        currency=currency,
+        gateway=settings.PAYMENT_GATEWAY,
+        source=source,
+    )
 
 
-def _json_body(request: HttpRequest) -> Dict[str, Any] | None:
+def _json_body(request: HttpRequest) -> dict[str, Any] | None:
     try:
         return json.loads(request.body.decode("utf-8") or "{}")
     except json.JSONDecodeError:
@@ -106,7 +124,7 @@ def bitpay_webhook(request: HttpRequest) -> JsonResponse:
         return JsonResponse({"status": "error", "code": "bad_signature"}, status=400)
     payload = _json_body(request)
     if payload is None:
-        _emit("pay_webhook_bad_sig", reason="bad_payload")
+        _emit("pay_webhook_bad_payload", reason="bad_payload")
         return JsonResponse({"status": "error", "code": "bad_payload"}, status=400)
     event_id = payload.get("id") or payload.get("event_id")
     if isinstance(payload.get("data"), dict) and not event_id:
@@ -143,7 +161,7 @@ def bitpay_verify(request: HttpRequest) -> JsonResponse:
         )
         IdempotencyKey.objects.filter(key=key).delete()
         return JsonResponse(cached or ERROR, status=502)
-    success_body: Dict[str, Any] = {"status": "ok", "data": response}
+    success_body: dict[str, Any] = {"status": "ok", "data": response}
     cache.set(cache_key, success_body, 3600)
     _emit_success(response if isinstance(response, dict) else data, "verify")
     return JsonResponse(success_body)

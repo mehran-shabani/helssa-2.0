@@ -21,5 +21,8 @@ def verify_signature(headers, body):
         return False, "bad_timestamp"
     if abs(int(time.time()) - ts_int) > settings.PAY_SIG_MAX_SKEW_SECONDS:
         return False, "skew"
-    expected = hmac.new(secret.encode(), body + timestamp.encode(), digestmod="sha256").hexdigest()
+    body_bytes = body if isinstance(body, bytes) else body.encode("utf-8")
+    expected = hmac.new(
+        secret.encode(), body_bytes + b"|" + timestamp.encode(), digestmod="sha256"
+    ).hexdigest()
     return (True, "") if hmac.compare_digest(expected, signature) else (False, "mismatch")

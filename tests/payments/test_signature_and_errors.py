@@ -28,7 +28,9 @@ def _webhook(client, payload, secret, *, sign=None, timestamp=None):
     body = json.dumps(payload)
     ts = str(timestamp or int(timezone.now().timestamp()))
     key = (sign or secret).encode()
-    sig = hmac.new(key, body.encode() + ts.encode(), digestmod="sha256").hexdigest()
+    sig = hmac.new(
+        key, body.encode() + b"|" + ts.encode(), digestmod="sha256"
+    ).hexdigest()
     return client.post(
         "/telemedicine/pay/webhook",
         data=body,
@@ -62,7 +64,9 @@ def test_signature_and_tat(client, monkeypatch):
     tat = Event.objects.filter(name="pay_success", props__gateway="bitpay").last()
     assert tat and tat.props["tat_ms"] > 0
 
-@pytest.mark.parametrize("factory, expected", [(_timeout, "timeout"), (lambda: _http_error(500), 500)])
+@pytest.mark.parametrize(
+    "factory, expected", [(_timeout, "timeout"), (lambda: _http_error(500), 500)]
+)
 def test_verify_errors_emit_ext_error(client, monkeypatch, factory, expected):
     exc = factory()
     def raiser(*_, **__):
