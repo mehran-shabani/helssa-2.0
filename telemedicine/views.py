@@ -159,7 +159,10 @@ def bitpay_verify(request: HttpRequest) -> JsonResponse:
             code=getattr(getattr(exc, "response", None), "status_code", "timeout"),
             msg=str(exc),
         )
-        IdempotencyKey.objects.filter(key=key).delete()
+        try:
+            IdempotencyKey.objects.filter(key=key).delete()
+        except Exception:
+            logger.exception("idempotency_key_delete_failed", extra={"key": key})
         return JsonResponse(cached or ERROR, status=502)
     success_body: dict[str, Any] = {"status": "ok", "data": response}
     cache.set(cache_key, success_body, 3600)
