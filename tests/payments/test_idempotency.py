@@ -24,7 +24,11 @@ def test_idempotency_for_webhook_and_verify(client, monkeypatch):
         "success_at": timezone.now().isoformat(),
     })
     ts = str(int(time.time()))
-    sig = hmac.new(secret.encode(), payload.encode() + ts.encode(), digestmod="sha256").hexdigest()
+    sig = hmac.new(
+        secret.encode(),
+        payload.encode() + b"|" + ts.encode(),
+        digestmod="sha256",
+    ).hexdigest()
     for _ in range(2):
         assert (
             client.post(

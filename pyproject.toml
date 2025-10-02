@@ -21,7 +21,7 @@ dependencies = [
   "django-cors-headers",
   "dj-database-url",
   "python-dotenv",
-  "requests",
+  "requests>=2.32.5,<3",
   "celery",
   "redis",
   "gunicorn",

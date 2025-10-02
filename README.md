@@ -80,11 +80,13 @@ BitPay integrations are secured with idempotency keys, signature verification, a
   - `BITPAY_WEBHOOK_SECRET`
   - `BITPAY_SIGNATURE_HEADER` (default: `X-Signature`)
   - `BITPAY_TIMESTAMP_HEADER` (default: `X-Timestamp`)
-  - `PAY_SIG_MAX_SKEW_SECONDS` (default: `300`)
+  - `PAY_SIG_MAX_SKEW_SECONDS` (default: `60`)
   - `BITPAY_VERIFY_URL`
+  - `BITPAY_REQUEST_TIMEOUT` (default: `10` seconds)
 - Duplicate webhook or verify requests short-circuit via idempotency keys and emit
   `pay_webhook_duplicate` analytics events (scoped via event props).
 - Invalid signatures are rejected with HTTP 400 and recorded via `pay_webhook_bad_sig`.
+- Malformed payloads emit `pay_webhook_bad_payload` before returning HTTP 400.
 - External BitPay verify requests use strict timeouts and emit `ext_error` telemetry on failures.
 - Successful payment transitions emit a `pay_success` analytics event capturing turnaround time
   (TAT) and amount metadata.

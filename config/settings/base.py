@@ -3,9 +3,12 @@ from __future__ import annotations
 import os
 from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
+from urllib.parse import urlparse
 
 import dj_database_url
 from dotenv import load_dotenv
+
+from django.core.exceptions import ImproperlyConfigured
 
 load_dotenv()
 
@@ -129,11 +132,32 @@ CELERY_RESULT_SERIALIZER = "json"
 # }
 
 PAYMENT_GATEWAY = os.getenv("PAYMENT_GATEWAY", "bitpay")
-BITPAY_WEBHOOK_SECRET = os.getenv("BITPAY_WEBHOOK_SECRET", "")
+BITPAY_WEBHOOK_SECRET = os.getenv("BITPAY_WEBHOOK_SECRET")
+if not BITPAY_WEBHOOK_SECRET:
+    if os.getenv("DJANGO_SETTINGS_MODULE", "").endswith(".test"):
+        BITPAY_WEBHOOK_SECRET = "test-bitpay-secret"
+    elif not DEBUG:
+        raise ValueError("BITPAY_WEBHOOK_SECRET must be set")
+
 BITPAY_SIGNATURE_HEADER = os.getenv("BITPAY_SIGNATURE_HEADER", "X-Signature")
 BITPAY_TIMESTAMP_HEADER = os.getenv("BITPAY_TIMESTAMP_HEADER", "X-Timestamp")
-PAY_SIG_MAX_SKEW_SECONDS = int(os.getenv("PAY_SIG_MAX_SKEW_SECONDS", "300"))
-BITPAY_VERIFY_URL = os.getenv("BITPAY_VERIFY_URL", "https://bitpay.example/verify")
+PAY_SIG_MAX_SKEW_SECONDS = int(os.getenv("PAY_SIG_MAX_SKEW_SECONDS", "60"))
+BITPAY_VERIFY_URL = os.getenv("BITPAY_VERIFY_URL")
+if BITPAY_VERIFY_URL:
+    BITPAY_VERIFY_URL = BITPAY_VERIFY_URL.strip()
+if not BITPAY_VERIFY_URL:
+    if os.getenv("DJANGO_SETTINGS_MODULE", "").endswith(".test"):
+        BITPAY_VERIFY_URL = "https://bitpay.test/verify"
+    else:
+        raise ImproperlyConfigured("BITPAY_VERIFY_URL must be set")
+
+_parsed_bitpay_verify = urlparse(BITPAY_VERIFY_URL)
+if _parsed_bitpay_verify.scheme != "https" or not _parsed_bitpay_verify.netloc:
+    raise ImproperlyConfigured(
+        "BITPAY_VERIFY_URL must be an https URL with a valid host"
+    )
+
+BITPAY_REQUEST_TIMEOUT = int(os.getenv("BITPAY_REQUEST_TIMEOUT", "10"))
 
 LOGGING = {
     "version": 1,

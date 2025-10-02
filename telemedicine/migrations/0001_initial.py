@@ -10,7 +10,15 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="IdempotencyKey",
             fields=[
-                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
                 ("key", models.CharField(max_length=160, unique=True)),
                 ("created_at", models.DateTimeField(auto_now_add=True)),
             ],
