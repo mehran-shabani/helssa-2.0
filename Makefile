@@ -1,4 +1,4 @@
-.PHONY: install run celery test lint format migrate redis-up redis-down
+.PHONY: install run celery test lint format migrate redis-up redis-down save-log save-log-file save-log-commit
 
 install:
 	python -m pip install --upgrade pip
@@ -37,3 +37,17 @@ redis-down:
 diag:
         python manage.py diag_probe --md || true
         @echo "Report at .reports/diag.md (and JSON at .reports/diag.json). Copy STDOUT between markers here."
+
+FILE_REQUIRED_MESSAGE := FILE variable is required. Usage: make save-log-file FILE=path/to/log.txt
+
+save-log:
+	python scripts/save_log.py $(if $(TAG),--tag "$(TAG)",)
+
+save-log-file:
+ifndef FILE
+	$(error $(FILE_REQUIRED_MESSAGE))
+endif
+	python scripts/save_log.py --input "$(FILE)" $(if $(TAG),--tag "$(TAG)",)
+
+save-log-commit:
+	python scripts/save_log.py $(if $(TAG),--tag "$(TAG)",) --commit
