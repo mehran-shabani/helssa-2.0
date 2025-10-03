@@ -52,7 +52,7 @@ class Command(BaseCommand):
                 top_mean = cursor.fetchall()
                 columns = [col[0] for col in cursor.description]
                 top_mean = [dict(zip(columns, row)) for row in top_mean]
-            except Exception as exc:
+            except Error as exc:
                 self.stdout.write(
                     "pg_stat_statements extension is unavailable or cannot be queried: "
                     f"{exc}.\n"
