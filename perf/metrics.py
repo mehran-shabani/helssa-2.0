@@ -16,10 +16,12 @@ def note_ready_success() -> None:
     READY_LAST_OK_TIMESTAMP = int(now().timestamp())
 
 
+from django.db import Error
+
 def _safe_count(model) -> int:
     try:
         return model.objects.count()
-    except Exception:  # pragma: no cover - db outages hard to simulate
+    except Error:  # pragma: no cover - db outages hard to simulate
         logger.exception("metrics count failed", extra={"model": model._meta.label_lower})
         return 0
 
