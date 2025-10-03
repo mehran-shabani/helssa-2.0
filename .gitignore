@@ -15,3 +15,12 @@ __pycache__/
 coverage.xml
 htmlcov/
 celerybeat-schedule
+
+# build artifacts / caches
+*.egg-info/
+pycache/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+htmlcov/

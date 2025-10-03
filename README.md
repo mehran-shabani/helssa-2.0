@@ -40,6 +40,13 @@ make redis-up
 - `GET /api/v1/analytics/daily` → paginated daily aggregates (staff-only)
 - `GET /api/v1/analytics/events` → paginated analytics events (staff-only)
 
+## New domain APIs
+
+- `GET /api/v1/doctor/visits/` → staff-only visit log (read-only)
+- `GET /api/v1/certificates/` → authenticated; staff see all, others only their certificates
+- `GET /api/v1/down/apk-stats/` → staff-only APK download counters (read-only)
+- `GET /api/v1/subscriptions/me` → authenticated users read their subscription and balance snapshot
+
 ### API Docs
 
 - OpenAPI schema: `/api/schema/`
