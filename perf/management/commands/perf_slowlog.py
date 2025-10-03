@@ -14,10 +14,6 @@ def _shorten(query: str) -> str:
 
 
 class Command(BaseCommand):
-    help = "Report slow SQL queries from pg_stat_statements"
-
-    def add_arguments(self, parser):
-class Command(BaseCommand):
     help = "Report slow logs"
 
     def add_arguments(self, parser):
@@ -82,4 +78,15 @@ class Command(BaseCommand):
                 )
                 lines.append(f"    {_shorten(row['query'])}")
             return "\n".join(lines)
+
+        self.stdout.write(_render("Top 10 by total time:", top_total))
+        self.stdout.write("")
+        self.stdout.write(_render("Top 10 by mean time:", top_mean))
+
+        if options["reset"]:
+            with connection.cursor() as cursor:
+                try:
+                    cursor.execute("SELECT pg_stat_statements_reset()")
+                    self.stdout.write("pg_stat_statements reset.")
+                except Exception as exc:
                     logger.warning("pg_stat_statements_reset failed", exc_info=exc)

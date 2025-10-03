@@ -1,4 +1,6 @@
-from django.db import migrations, models
+from django.db import migrations
+from django.db import models
+from django.db.utils import DatabaseError
 
 
 INDEXES = [
@@ -19,7 +21,9 @@ def forwards(apps, schema_editor):
     except LookupError:
         return
     with schema_editor.connection.cursor() as cursor:
-        constraints = schema_editor.connection.introspection.get_constraints(cursor, model._meta.db_table)
+        constraints = schema_editor.connection.introspection.get_constraints(
+            cursor, model._meta.db_table
+        )
     existing = set(constraints)
     for index in INDEXES:
         if index.name in existing:
@@ -35,9 +39,9 @@ def backwards(apps, schema_editor):
     for index in INDEXES:
         try:
             schema_editor.remove_index(model, index)
-        except Exception:
-            # Index might not exist on some backends; swallow to keep reversible.
-            continue
+        except DatabaseError:
+            # Index might not exist; safe to ignore for reversibility
+            pass
 
 
 class Migration(migrations.Migration):

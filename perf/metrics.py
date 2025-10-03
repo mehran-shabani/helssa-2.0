@@ -28,7 +28,7 @@ def build_metrics() -> str:
     from analytics.models import Event, StatsDaily
 
     parts = [
-        f"helssa_app_info{{version=\"{settings.APP_VERSION}\"}} 1",
+        f'helssa_app_info{{version="{settings.APP_VERSION}"}} 1',
         f"helssa_events_total {_safe_count(Event)}",
         f"helssa_statsdays_total {_safe_count(StatsDaily)}",
         f"helssa_ready_last_ok_timestamp {READY_LAST_OK_TIMESTAMP}",

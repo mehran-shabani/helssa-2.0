@@ -6,12 +6,8 @@ from rest_framework.routers import DefaultRouter
 from analytics.api import DailyStatsViewSet, EventViewSet
 from apps.common.views import health
 from apps.system.views import SystemHealthView, SystemReadyView
-from telemedicine import views as telemedicine_views
-
 from perf.metrics import metrics_enabled
-
-if metrics_enabled():
-    from perf.views import MetricsView
+from telemedicine import views as telemedicine_views
 
 router = DefaultRouter()
 router.register(r"analytics/daily", DailyStatsViewSet, basename="analytics-daily")

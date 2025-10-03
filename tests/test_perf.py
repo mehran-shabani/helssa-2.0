@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import config.urls
 import importlib
 import os
 from io import StringIO
@@ -11,15 +12,6 @@ from django.urls import clear_url_caches
 
 from analytics.models import Event, StatsDaily
 
-
-@pytest.fixture
-def reload_urls():
-from analytics.models import Event, StatsDaily
-import config.urls
-
-import os
-import importlib
-import pytest
 
 @pytest.fixture
 def reload_urls():
