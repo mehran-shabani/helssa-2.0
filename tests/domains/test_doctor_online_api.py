@@ -34,7 +34,7 @@ def test_visits_reject_non_staff(django_user_model):
         username="regular", email="regular@example.com", password="pass"
     )
     anonymous_response = APIClient().get("/api/v1/doctor/visits/")
-    assert anonymous_response.status_code in {401, 403}
+    assert anonymous_response.status_code == 401
 
     client = APIClient()
     client.force_authenticate(user=user)
