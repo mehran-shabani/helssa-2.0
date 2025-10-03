@@ -14,6 +14,8 @@ from django.utils import timezone
 from rest_framework.permissions import AllowAny, IsAdminUser
 from rest_framework.views import APIView
 
+from perf.metrics import note_ready_success
+
 logger = logging.getLogger(__name__)
 
 
@@ -132,7 +134,10 @@ class SystemReadyView(APIView):
         if status_code == 503:
             logger.warning("system readiness degraded", extra={"components": components})
 
-        return JsonResponse(
+        response = JsonResponse(
             {"status": "ok" if status_code == 200 else "degraded", "components": components},
             status=status_code,
         )
+        if status_code == 200:
+            note_ready_success()
+        return response

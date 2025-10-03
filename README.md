@@ -48,6 +48,21 @@ Visit [`/health`](http://localhost:8000/health) for a readiness probe.
 ## Observability
 All HTTP responses carry `X-Request-ID` and `X-Response-Time-ms` headers. Structured logs are emitted in JSON with PII masking for sensitive keys (`password`, `token`, `otp`, `national_code`).
 
+## Performance
+The backend includes opt-in hooks for database tuning and runtime metrics:
+
+- **Slow query reports** rely on PostgreSQL's `pg_stat_statements` extension. Enable it once with:
+
+  ```sql
+  CREATE EXTENSION IF NOT EXISTS pg_stat_statements;
+  ```
+
+  Then run `python manage.py perf_slowlog` to print the top queries by total and mean execution time. Add `--reset` to clear the statistics afterwards. The command gracefully explains how to enable the extension when it's missing.
+
+- **Prometheus metrics** become available at `/metrics` when `ENABLE_METRICS=true` is exported before starting Django. The endpoint responds with `text/plain; version=0.0.4` content and performs lightweight counts at request time only.
+
+- **Celery beat (optional)** gains a weekly job when `ENABLE_PERF_SLOWLOG_BEAT=true` is set. The job logs the slow query report to stdout so operators can archive it from worker logs. It is disabled by default for production deployments.
+
 ## Celery
 Celery is configured with Redis by default. Update `CELERY_BROKER_URL` in your environment to point to your broker. Celery auto-discovers tasks from Django apps.
 
