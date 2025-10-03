@@ -6,6 +6,7 @@ from rest_framework.routers import DefaultRouter
 from analytics.api import DailyStatsViewSet, EventViewSet
 from apps.common.views import health
 from apps.system.views import SystemHealthView, SystemReadyView
+from perf.metrics import metrics_enabled
 from telemedicine import views as telemedicine_views
 
 router = DefaultRouter()
@@ -35,3 +36,7 @@ urlpatterns = [
         name="telemedicine-bitpay-verify",
     ),
 ]
+
+if metrics_enabled():
+    from perf.views import MetricsView
+    urlpatterns.append(path("metrics", MetricsView.as_view(), name="metrics"))

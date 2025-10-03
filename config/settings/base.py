@@ -5,6 +5,7 @@ from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
 
 import dj_database_url
+from celery.schedules import crontab
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -34,6 +35,7 @@ INSTALLED_APPS = [
     "apps.system",
     "analytics",
     "telemedicine",
+    "perf",
 ]
 
 MIDDLEWARE = [
@@ -121,12 +123,13 @@ CELERY_TASK_TRACK_STARTED = True
 CELERY_ACCEPT_CONTENT = ["json"]
 CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_SERIALIZER = "json"
-# CELERY_BEAT_SCHEDULE = {
-#     "nightly-analytics": {
-#         "task": "analytics.tasks.aggregate_daily_stats",
-#         "schedule": 24 * 60 * 60,
-#     }
-# }
+CELERY_BEAT_SCHEDULE = {}
+
+if os.getenv("ENABLE_PERF_SLOWLOG_BEAT", "false").lower() == "true":
+    CELERY_BEAT_SCHEDULE["perf-slowlog-weekly"] = {
+        "task": "perf.tasks.collect_slowlog",
+        "schedule": crontab(hour=1, minute=0, day_of_week="sun"),
+    }
 
 PAYMENT_GATEWAY = os.getenv("PAYMENT_GATEWAY", "bitpay")
 BITPAY_WEBHOOK_SECRET = os.getenv("BITPAY_WEBHOOK_SECRET")
