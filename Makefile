@@ -1,4 +1,4 @@
-.PHONY: install run celery test lint format migrate redis-up redis-down save-log save-log-file save-log-commit
+.PHONY: install run celery test lint format migrate redis-up redis-down save-log save-log-file save-log-commit repo-struct repo-struct-out
 
 install:
 	python -m pip install --upgrade pip
@@ -50,4 +50,10 @@ endif
 	python scripts/save_log.py --input "$(FILE)" $(if $(TAG),--tag "$(TAG)",)
 
 save-log-commit:
-	python scripts/save_log.py $(if $(TAG),--tag "$(TAG)",) --commit
+        python scripts/save_log.py $(if $(TAG),--tag "$(TAG)",) --commit
+
+repo-struct:
+	python scripts/repo_tree_report.py
+
+repo-struct-out:
+	python scripts/repo_tree_report.py --out docs/REPO_STRUCTURE.md
