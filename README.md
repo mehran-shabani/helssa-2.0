@@ -48,8 +48,12 @@ Visit [`/health`](http://localhost:8000/health) for a readiness probe.
 ## Observability
 All HTTP responses carry `X-Request-ID` and `X-Response-Time-ms` headers. Structured logs are emitted in JSON with PII masking for sensitive keys (`password`, `token`, `otp`, `national_code`).
 
+…  
+structured logs are emitted in JSON with PII masking for sensitive keys (`password`, `token`, `otp`, `national_code`).
+
 ## Performance
 The backend includes opt-in hooks for database tuning and runtime metrics:
+…  
 
 - **Slow query reports** rely on PostgreSQL's `pg_stat_statements` extension. Enable it once with:
 
