@@ -14,8 +14,15 @@ from analytics.models import Event, StatsDaily
 
 @pytest.fixture
 def reload_urls():
-    import config.urls  # noqa: WPS433 - imported for reload control
+from analytics.models import Event, StatsDaily
+import config.urls
 
+import os
+import importlib
+import pytest
+
+@pytest.fixture
+def reload_urls():
     def _reload(enable: bool) -> None:
         if enable:
             os.environ["ENABLE_METRICS"] = "true"
