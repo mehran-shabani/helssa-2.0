@@ -17,8 +17,11 @@ def test_owner_sees_only_their_certificates(django_user_model):
 
     client = APIClient()
     client.force_authenticate(user=owner)
-    data = client.get("/api/v1/certificates/").json()["results"]
-    assert {item["id"] for item in data} == {owner_cert.id}
+    response = client.get("/api/v1/certificates/")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["count"] == 1
+    assert {item["id"] for item in data["results"]} == {owner_cert.id}
 
 
 def test_staff_sees_all_certificates(django_user_model):
