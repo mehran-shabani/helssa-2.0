@@ -23,6 +23,15 @@ python manage.py runserver 0.0.0.0:8000
 
 Visit [`/health`](http://localhost:8000/health) for a readiness probe.
 
+### Dev Bootstrap
+
+```bash
+python manage.py bootstrap_dev
+python manage.py diag_probe --md || true
+# Optional for Celery ping:
+make redis-up
+```
+
 ## Endpoints
 
 - `GET /health` → fast path (no database access)

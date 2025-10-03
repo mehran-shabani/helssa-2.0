@@ -151,9 +151,18 @@ class Command(BaseCommand):
         timestamp = timezone.now().isoformat()
         client = Client()
 
+        migrations = _migrations_summary()
+        pending_total = migrations.get("pending_total")
+        has_pending = isinstance(pending_total, int) and pending_total > 0
+
         health = _endpoint(client, "/health")
         system_health = _endpoint(client, "/api/v1/system/health")
-        ready = _endpoint(client, "/api/v1/system/ready", staff=True)
+        ready = _endpoint(
+            client,
+            "/api/v1/system/ready",
+            staff=not has_pending,
+        )
+        ready["skipped_staff_due_to_pending_migrations"] = has_pending
 
         db_info: Dict[str, Any] = {
             "engine": settings.DATABASES.get("default", {}).get("ENGINE", "?"),
@@ -186,7 +195,7 @@ class Command(BaseCommand):
                 ).splitlines(),
             },
             "db": db_info,
-            "migrations": _migrations_summary(),
+            "migrations": migrations,
             "cache": _cache_probe(),
             "celery": _celery_ping(),
             "endpoints": {
