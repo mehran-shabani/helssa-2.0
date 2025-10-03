@@ -107,3 +107,24 @@ BitPay integrations are secured with idempotency keys, signature verification, a
 - External BitPay verify requests use strict timeouts and emit `ext_error` telemetry on failures.
 - Successful payment transitions emit a `pay_success` analytics event capturing turnaround time
   (TAT) and amount metadata.
+
+## Client Observability & Flavors (Flutter)
+
+Run with dart-defines (no plugins):
+
+```bash
+flutter run \
+  --dart-define=API_BASE_URL=http://10.0.2.2:8000 \
+  --dart-define=BUILD_FLAVOR=dev \
+  --dart-define=analyticsUploadEnabled=false \
+  --dart-define=kpiPanelEnabled=true \
+  --dart-define=showDevMenu=true
+```
+
+- **X-Request-ID & Idempotency**: all requests include a fresh `X-Request-ID`; pass `idempotencyKey` to `HelssaClient.request` for POST retries.
+- **Retries/Timeouts**: GET/HEAD (and POST with idempotency) retry up to 3x with jittered backoff; 10s timeout per attempt.
+- **Client Analytics**: local ring buffer (200 events). If `analyticsUploadEnabled=true` and `/api/v1/analytics/client-event` exists, batches are uploaded silently; 404/403 disables upload without errors. Sensitive keys (`password`, `token`, `otp`, `national_code`) are masked.
+- **Error Banners**: use `networkErrorBanner`, `paymentErrorBanner`, `insuranceErrorBanner` (each shows the Request-ID).
+- **KPI Panel**: guarded by `kpiPanelEnabled` & `showDevMenu`. Calls `/api/v1/analytics/daily?from=YYYY-MM-DD&to=YYYY-MM-DD`. Shows "Restricted (staff-only)" on 401/403.
+- **Prescription Timeline**: `PrescriptionTimeline` renders `DRAFT → SUBMITTED → INS_PENDING → INS_CONFIRMED → DELIVERED`, interpolating missing as "pending".
+- **System Status**: `SystemStatusPage` reads `/api/v1/system/health`; "Deep check" calls `/api/v1/system/ready` (staff).
