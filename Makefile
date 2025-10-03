@@ -23,4 +23,9 @@ format:
 	isort .
 
 migrate:
-	DJANGO_SETTINGS_MODULE=config.settings.dev python manage.py migrate
+        DJANGO_SETTINGS_MODULE=config.settings.dev python manage.py migrate
+
+.PHONY: diag
+diag:
+	python manage.py diag_probe --md || true
+	@echo "Report at .reports/diag.md (and JSON at .reports/diag.json). Copy STDOUT between markers here."
