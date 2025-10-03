@@ -16,7 +16,10 @@ def test_staff_can_list_visits(django_user_model):
     client = APIClient()
     client.force_authenticate(user=staff)
     response = client.get("/api/v1/doctor/visits/")
-    assert response.status_code == 200 and response.json()["results"]
+    assert response.status_code == 200
+    data = response.json()
+    assert data["count"] == 1
+    assert data["results"][0]["note"] == "Follow-up"
 
 
 def test_visits_reject_non_staff(django_user_model):
