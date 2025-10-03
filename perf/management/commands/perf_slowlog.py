@@ -17,12 +17,22 @@ class Command(BaseCommand):
     help = "Report slow SQL queries from pg_stat_statements"
 
     def add_arguments(self, parser):
-        parser.add_argument("--reset", action="store_true", help="Reset pg_stat_statements after reporting")
+class Command(BaseCommand):
+    help = "Report slow logs"
+
+    def add_arguments(self, parser):
+        parser.add_argument(
+            "--reset",
+            action="store_true",
+            help="Reset pg_stat_statements after reporting.",
+        )
 
     def handle(self, *args, **options):
         connection = connections["default"]
         if connection.vendor != "postgresql":
-            self.stdout.write("pg_stat_statements requires PostgreSQL; current backend is not supported.")
+            self.stdout.write(
+                "pg_stat_statements requires PostgreSQL; current backend is not supported."
+            )
             return
 
         with connection.cursor() as cursor:
@@ -38,7 +48,7 @@ class Command(BaseCommand):
                 )
                 top_total = cursor.fetchall()
                 columns = [col[0] for col in cursor.description]
-                top_total = [dict(zip(columns, row)) for row in top_total]
+                top_total = [dict(zip(columns, row, strict=True)) for row in top_total]
 
                 cursor.execute(
                     """
@@ -51,8 +61,8 @@ class Command(BaseCommand):
                 )
                 top_mean = cursor.fetchall()
                 columns = [col[0] for col in cursor.description]
-                top_mean = [dict(zip(columns, row)) for row in top_mean]
-            except Error as exc:
+                top_mean = [dict(zip(columns, row, strict=True)) for row in top_mean]
+            except Exception as exc:
                 self.stdout.write(
                     "pg_stat_statements extension is unavailable or cannot be queried: "
                     f"{exc}.\n"
@@ -67,34 +77,9 @@ class Command(BaseCommand):
                 lines.append("(no rows)")
             for idx, row in enumerate(rows, start=1):
                 lines.append(
-                    f"{idx:02d}. total={row['total_time']:.2f}ms mean={row['mean_time']:.2f}ms calls={row['calls']}:"
+                    f"{idx:02d}. total={row['total_time']:.2f}ms "
+                    f"mean={row['mean_time']:.2f}ms calls={row['calls']}:"
                 )
                 lines.append(f"    {_shorten(row['query'])}")
             return "\n".join(lines)
-
-        report = "\n\n".join(
-            [
-                _render("Top 10 by total execution time", top_total),
-                _render("Top 10 by mean execution time", top_mean),
-            ]
-        )
-        self.stdout.write(report + "\n")
-
-        if top_mean:
-            worst_mean = top_mean[0]
-            logger.info(
-                "perf_slowlog reported %s total rows; worst mean %.2fms",
-                len(top_total) + len(top_mean),
-                worst_mean["mean_time"],
-            )
-        else:
-            logger.info("perf_slowlog reported no rows")
-
-        if options.get("reset"):
-            with connection.cursor() as cursor:
-                try:
-                    cursor.execute("SELECT pg_stat_statements_reset()")
-                    self.stdout.write("pg_stat_statements has been reset.\n")
-                except Exception as exc:
-                    self.stdout.write(f"Failed to reset pg_stat_statements: {exc}\n")
                     logger.warning("pg_stat_statements_reset failed", exc_info=exc)
