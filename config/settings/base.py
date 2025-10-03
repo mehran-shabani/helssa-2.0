@@ -32,6 +32,7 @@ INSTALLED_APPS = [
     "drf_spectacular",
     "corsheaders",
     "apps.common",
+    "apps.ops",
     "apps.system",
     "analytics",
     "telemedicine",
