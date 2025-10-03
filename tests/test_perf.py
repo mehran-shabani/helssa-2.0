@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import config.urls
 import importlib
 import os
 from io import StringIO
@@ -10,6 +9,7 @@ from django.core.management import call_command
 from django.db import connection
 from django.urls import clear_url_caches
 
+import config.urls
 from analytics.models import Event, StatsDaily
 
 
