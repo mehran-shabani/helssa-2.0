@@ -42,4 +42,5 @@ urlpatterns = [
 ]
 
 if metrics_enabled():
+    from perf.views import MetricsView
     urlpatterns.append(path("metrics", MetricsView.as_view(), name="metrics"))
