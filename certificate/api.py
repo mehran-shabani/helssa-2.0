@@ -16,6 +16,14 @@ class CertificateViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
+        """
+        بازگشت یک queryset از نمونه‌های Certificate متناسب با کاربر جاری.
+        
+        برای بهینه‌سازی، کوئری پایه شامل select_related("owner") و مرتب‌سازی نزولی بر اساس created_at است. اگر کاربر جاری staff باشد، همهٔ رکوردها بازگردانده می‌شوند؛ در غیر اینصورت فقط Certificateهایی که owner آن‌ها برابر با کاربر جاری است بازمی‌گردد.
+        
+        Returns:
+            QuerySet: مجموعه‌ای از اشیاء Certificate مطابق با دسترسی کاربر و مرتب‌شده بر اساس created_at به صورت نزولی.
+        """
         queryset = Certificate.objects.select_related("owner").order_by("-created_at")
         user = self.request.user
         if user.is_staff:

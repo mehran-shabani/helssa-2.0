@@ -20,6 +20,13 @@ def test_staff_can_list_visits(django_user_model):
 
 
 def test_visits_reject_non_staff(django_user_model):
+    """
+    بررسی می‌کند که دسترسی به نقطهٔ انتهایی "/api/v1/doctor/visits/" برای کاربران غیرپرسنل مسدود باشد.
+    
+    آزمایش یک کاربر عادی ایجاد می‌کند، سپس:
+    - درخواست ناشناس به "/api/v1/doctor/visits/" باید وضعیت 401 یا 403 برگرداند.
+    - درخواست احرازشده با کاربر غیرپرسنل باید وضعیت 403 برگرداند.
+    """
     user = django_user_model.objects.create_user(
         username="regular", email="regular@example.com", password="pass"
     )
