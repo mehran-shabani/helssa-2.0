@@ -26,13 +26,8 @@ class Command(BaseCommand):
                 username=username,
                 email=email,
                 password=password,
+                is_staff=True,
             )
-            updates = []
-            if not user.is_staff:
-                user.is_staff = True
-                updates.append("is_staff")
-            if updates:
-                user.save(update_fields=updates)
             self.stdout.write("Staff user created.")
 
         self.stdout.write("")
