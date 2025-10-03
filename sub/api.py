@@ -21,11 +21,12 @@ class MeSubscriptionView(APIView):
             dict: دیکشنری با کلیدهای `tokens` (تعداد توکن‌های اشتراک، عدد صحیح) و `balance` (موجودی حساب، عددی).
         """
         user = request.user
-        tokens = (
-            Subscription.objects.filter(user=user).values_list("tokens", flat=True).first()
-            or 0
-        )
-        balance = (
-            BoxMoney.objects.filter(user=user).values_list("balance", flat=True).first() or 0
-        )
+        try:
+            tokens = user.subscription.tokens
+        except Subscription.DoesNotExist:
+            tokens = 0
+        try:
+            balance = user.boxmoney.balance
+        except BoxMoney.DoesNotExist:
+            balance = 0
         return Response({"tokens": tokens, "balance": balance})
