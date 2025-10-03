@@ -16,8 +16,6 @@ INDEXES = [
 
 def forwards(apps, schema_editor):
     try:
-def forwards(apps, schema_editor):
-    try:
         model = apps.get_model("telemedicine", "Transaction")
     except LookupError:
         return

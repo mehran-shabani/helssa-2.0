@@ -4,6 +4,7 @@ import logging
 import os
 
 from django.conf import settings
+from django.db import Error
 from django.utils.timezone import now
 
 logger = logging.getLogger(__name__)
@@ -15,8 +16,6 @@ def note_ready_success() -> None:
     global READY_LAST_OK_TIMESTAMP
     READY_LAST_OK_TIMESTAMP = int(now().timestamp())
 
-
-from django.db import Error
 
 def _safe_count(model) -> int:
     try:
