@@ -36,6 +36,11 @@ INSTALLED_APPS = [
     "apps.system",
     "analytics",
     "telemedicine",
+    "doctor_online",
+    "certificate",
+    "sub",
+    "down",
+    "chatbot",
     "perf",
 ]
 
