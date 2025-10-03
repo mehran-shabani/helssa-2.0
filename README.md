@@ -60,6 +60,22 @@ All HTTP responses carry `X-Request-ID` and `X-Response-Time-ms` headers. Struct
 …  
 structured logs are emitted in JSON with PII masking for sensitive keys (`password`, `token`, `otp`, `national_code`).
 
+## Log capture
+
+Use `scripts/save_log.py` to archive diagnostics without touching runtime behavior. Each run appends a timestamped entry to `docs/PROJECT_LOG.md` and stores the raw text under `project_logs/`.
+
+Examples:
+
+```bash
+echo "my log text" | python scripts/save_log.py --tag "phase note"
+printf "my log text\n" | make save-log TAG="phase note"
+make save-log-file FILE=path/to/log.txt TAG="perf review"
+echo "ready to commit" | make save-log-commit TAG="triage"
+```
+
+`make save-log-commit` (or the `--commit` flag) creates a local `[skip ci] chore(log): update PROJECT_LOG.md` commit when Git is available.
+
+
 ## Performance
 The backend includes opt-in hooks for database tuning and runtime metrics:
 …  
