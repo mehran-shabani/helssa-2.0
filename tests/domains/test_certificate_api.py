@@ -22,6 +22,14 @@ def test_owner_sees_only_their_certificates(django_user_model):
 
 
 def test_staff_sees_all_certificates(django_user_model):
+    """
+    تأیید می‌کند که یک کاربر با دسترسی staff همه‌ی گواهی‌های موجود را در پاسخ لیست API می‌بیند.
+    
+    این تست دو کاربر معمولی و برای هرکدام یک Certificate ایجاد می‌کند، سپس یک superuser (staff) می‌سازد و با آن به انتهای /api/v1/certificates/ درخواست GET می‌زند و بررسی می‌کند که شناسه‌های بازگشتی شامل هر دو گواهی ساخته‌شده باشد.
+    
+    Parameters:
+        django_user_model: فیچر pytest که مدل کاربر Django را فراهم می‌کند (برای ایجاد کاربران تست).
+    """
     owner = django_user_model.objects.create_user(
         username="owner2", email="owner2@example.com", password="pass"
     )
