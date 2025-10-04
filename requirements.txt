@@ -1,0 +1,26 @@
+# Core Django
+Django>=5.0
+djangorestframework>=3.15
+django-cors-headers>=4.4
+drf-spectacular
+
+# Database
+dj-database-url
+psycopg[binary]
+
+# Utilities
+python-dotenv
+requests
+whitenoise
+gunicorn
+uvicorn[standard]
+
+# Async/Celery
+celery
+redis
+
+# OpenAI & Chatbot
+openai>=1.40
+pdfminer.six>=20231228
+Pillow>=10.4
+filetype>=1.2.0

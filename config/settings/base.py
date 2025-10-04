@@ -165,3 +165,21 @@ LOGGING = {
         "level": "INFO",
     },
 }
+
+# Media files (user uploads)
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
+
+# OpenAI Chatbot Settings
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
+OPENAI_BASE_URL = os.getenv("OPENAI_BASE_URL", "")
+OPENAI_DEFAULT_MODEL = os.getenv("OPENAI_DEFAULT_MODEL", "gpt-4o-mini")
+OPENAI_REASONING_MODEL = os.getenv("OPENAI_REASONING_MODEL", "o1")
+OPENAI_TIMEOUT = int(os.getenv("OPENAI_TIMEOUT", "15"))
+CHAT_MAX_HISTORY_TURNS = int(os.getenv("CHAT_MAX_HISTORY_TURNS", "6"))
+CHAT_SUMMARY_AFTER_TURNS = int(os.getenv("CHAT_SUMMARY_AFTER_TURNS", "10"))
+ALLOWED_OPENAI_MODELS = {"gpt-4o-mini", "gpt-4o", "o1"}
+
+# File upload limits
+FILE_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024  # 10MB
+DATA_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024  # 10MB
