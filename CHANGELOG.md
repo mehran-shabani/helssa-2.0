@@ -104,3 +104,31 @@
 - Merge pull request #24 from mehran-shabani/codex/implement-multimodal-chatbot-api
 - Merge pull request #21 from mehran-shabani/codex/tighten-quality-gates-and-add-diagnostic-writer
 
+## v2.3.0 - 2025-10-04
+### feat
+- feat(chatbot): add consent-aware smart storage
+- feat: add multimodal chatbot endpoint
+- feat: enforce coverage and add diagnostics writer
+
+### fix
+- fix(release): derive next minor from highest tag
+- fix: handle changelog without tags
+
+### chore
+- chore: bump project version to v2.3.0
+- chore: run release workflow only on main
+
+### other
+- Merge pull request #30 from mehran-shabani/codex/update-version-to-2.3.0
+- Merge pull request #29 from mehran-shabani/codex/fix-version-tagging-for-releases
+- Merge pull request #28 from mehran-shabani/codex/fix-existing-tag-error-during-release
+- Merge pull request #27 from mehran-shabani/codex-chatbot
+- [skip ci] chore(release): v2.2.0
+- Merge pull request #26 from mehran-shabani/codex/fix-git-error-in-changelog-script
+- [skip ci] chore(release): v2.1.0
+- Merge pull request #25 from mehran-shabani/codex/add-smart-storage-to-chatbot-app
+- Update release.yml
+- Update release.yml
+- Merge pull request #24 from mehran-shabani/codex/implement-multimodal-chatbot-api
+- Merge pull request #21 from mehran-shabani/codex/tighten-quality-gates-and-add-diagnostic-writer
+
