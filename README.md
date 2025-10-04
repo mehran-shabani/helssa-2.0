@@ -61,6 +61,12 @@ make redis-up
 - `make test` – run the pytest suite
 - `make migrate` – apply database migrations
 
+## Diagnostics & Coverage
+
+- `make diag` regenerates `.reports/diag.json` and writes the curated summary to `docs/DIAG.md`.
+- `make diag-commit` optionally stages `.reports/diag.json` and `docs/DIAG.md` and creates a local commit.
+- Continuous integration enforces at least **80%** test coverage and publishes the HTML report artifact when pipelines run.
+
 ## Observability
 All HTTP responses carry `X-Request-ID` and `X-Response-Time-ms` headers. Structured logs are emitted in JSON with PII masking for sensitive keys (`password`, `token`, `otp`, `national_code`).
 

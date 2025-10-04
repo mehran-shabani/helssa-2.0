@@ -1,0 +1,72 @@
+{
+  "ts": "2025-10-04T08:27:58.745792+00:00",
+  "version": "v2.0.0",
+  "python": "3.12.10",
+  "django": "5.2.7",
+  "settings": "config.settings.test",
+  "debug": false,
+  "flags": {
+    "TELEMETRY_ENABLED": true,
+    "KPI_API_ENABLED": true,
+    "ENABLE_METRICS": false
+  },
+  "git": {
+    "branch": "work",
+    "last_tag": "v2.0.0",
+    "last_commits": [
+      "59da705 Merge pull request #19 from mehran-shabani/codex/review-and-update-repo_structure.md",
+      "82d4696 docs: refresh repository structure report",
+      "7bbb4c4 Merge pull request #17 from mehran-shabani/codex/cleanup-repo-and-scaffold-new-apps"
+    ]
+  },
+  "db": {
+    "engine": "django.db.backends.sqlite3",
+    "connected": true
+  },
+  "migrations": {
+    "pending_total": 27,
+    "pending_by_app_top": {
+      "auth": 12,
+      "admin": 3,
+      "contenttypes": 2,
+      "analytics": 2,
+      "telemedicine": 2
+    }
+  },
+  "cache": {
+    "backend": "django.core.cache.backends.locmem.LocMemCache",
+    "ok": true
+  },
+  "celery": {
+    "enabled": true,
+    "ok": false,
+    "error": "Error 111 connecting to localhost:6379. Connection refused."
+  },
+  "endpoints": {
+    "/health": {
+      "status_code": 200,
+      "body": {
+        "status": "ok"
+      }
+    },
+    "/api/v1/system/health": {
+      "status_code": 200,
+      "body": {
+        "status": "ok",
+        "time": "2025-10-04T08:27:58.760668+00:00",
+        "version": "2.0.0"
+      }
+    },
+    "/api/v1/system/ready": {
+      "status_code": 403,
+      "body": {
+        "detail": "Authentication credentials were not provided."
+      },
+      "skipped_staff_due_to_pending_migrations": true
+    }
+  },
+  "coverage": {
+    "total_percent": 87.0,
+    "source": "htmlcov"
+  }
+}
