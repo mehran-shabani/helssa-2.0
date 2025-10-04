@@ -5,16 +5,14 @@ import re
 import subprocess
 from collections.abc import Iterable
 
+import bump_version
+
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 CHANGELOG = ROOT / "CHANGELOG.md"
 
 def last_tag() -> str:
-    try:
-        return subprocess.check_output(
-            ["git", "describe", "--tags", "--abbrev=0"], text=True
-        ).strip()
-    except subprocess.CalledProcessError:
-        return ""
+    tag = bump_version.latest_released_tag()
+    return tag or ""
 
 def commits_since(tag: str) -> list[str]:
     command = ["git", "log", "--pretty=%s"]
