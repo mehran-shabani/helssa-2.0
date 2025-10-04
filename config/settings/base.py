@@ -10,6 +10,13 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+
+def bool_env(name: str, default: bool = False) -> bool:
+    value = os.getenv(name)
+    if value is None:
+        return default
+    return value.strip().lower() in {"1", "true", "yes", "on"}
+
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 try:
@@ -165,3 +172,47 @@ LOGGING = {
         "level": "INFO",
     },
 }
+
+# Chatbot / OpenAI configuration
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
+OPENAI_BASE_URL = os.getenv("OPENAI_BASE_URL") or None
+OPENAI_ORG = os.getenv("OPENAI_ORG") or None
+
+CHATBOT_DEFAULT_MODEL = os.getenv("CHATBOT_DEFAULT_MODEL", "gpt-4o-mini")
+CHATBOT_VISION_MODEL = os.getenv("CHATBOT_VISION_MODEL", CHATBOT_DEFAULT_MODEL)
+CHATBOT_REASONING_MODEL = os.getenv(
+    "CHATBOT_REASONING_MODEL", CHATBOT_DEFAULT_MODEL
+)
+_additional_models = set(filter(None, os.getenv("CHATBOT_ADDITIONAL_MODELS", "").split()))
+CHATBOT_ALLOWED_MODELS = {
+    model
+    for model in {
+        CHATBOT_DEFAULT_MODEL,
+        CHATBOT_VISION_MODEL,
+        CHATBOT_REASONING_MODEL,
+        *_additional_models,
+    }
+    if model
+}
+CHATBOT_MAX_TOKENS = int(os.getenv("CHATBOT_MAX_TOKENS", "1024"))
+CHATBOT_REQUEST_TIMEOUT = int(os.getenv("CHATBOT_REQUEST_TIMEOUT", "20"))
+CHATBOT_SAVE_UPLOADS = os.getenv("CHATBOT_SAVE_UPLOADS", "false").lower() == "true"
+CHATBOT_MAX_IMAGE_FILES = int(os.getenv("CHATBOT_MAX_IMAGE_FILES", "3"))
+CHATBOT_MAX_PDF_FILES = int(os.getenv("CHATBOT_MAX_PDF_FILES", "2"))
+CHATBOT_MAX_FILE_MB = int(os.getenv("CHATBOT_MAX_FILE_MB", "4"))
+CHATBOT_MAX_PAYLOAD_MB = int(os.getenv("CHATBOT_MAX_PAYLOAD_MB", "12"))
+CHATBOT_PDF_MAX_PAGES = int(os.getenv("CHATBOT_PDF_MAX_PAGES", "10"))
+CHATBOT_PDF_MAX_CHARS = int(os.getenv("CHATBOT_PDF_MAX_CHARS", "8000"))
+
+SMART_STORAGE_ENABLED = bool_env("SMART_STORAGE_ENABLED", True)
+SMART_STORAGE_REQUIRE_CONSENT = bool_env("SMART_STORAGE_REQUIRE_CONSENT", True)
+SMART_STORAGE_DEFAULT_MODE = os.getenv("SMART_STORAGE_DEFAULT_MODE", "summary")
+SMART_STORAGE_TTL_DAYS = int(os.getenv("SMART_STORAGE_TTL_DAYS", "30"))
+SMART_STORAGE_CACHE_TTL_SECONDS = int(
+    os.getenv("SMART_STORAGE_CACHE_TTL_SECONDS", "86400")
+)
+SMART_STORAGE_MAX_TURNS = int(os.getenv("SMART_STORAGE_MAX_TURNS", "8"))
+SMART_STORAGE_MAX_TOKENS = int(os.getenv("SMART_STORAGE_MAX_TOKENS", "3000"))
+SMART_STORAGE_CLASSIFY_WITH_LLM = bool_env("SMART_STORAGE_CLASSIFY_WITH_LLM", False)
+SMART_STORAGE_SUMMARIZE_WITH_LLM = bool_env("SMART_STORAGE_SUMMARIZE_WITH_LLM", False)
+SMART_STORAGE_ALLOWED_STORE_VALUES = {"auto", "none", "summary", "full"}

@@ -52,6 +52,96 @@ make redis-up
 - OpenAPI schema: `/api/schema/`
 - Swagger UI: `/api/docs/`
 
+## Chatbot API
+
+Helssa ships with a single multimodal medical Q&A endpoint that proxies to OpenAI models.
+
+### Environment variables
+
+| Variable | Purpose | Default |
+| --- | --- | --- |
+| `OPENAI_API_KEY` | API key passed to the OpenAI SDK | `""` |
+| `OPENAI_BASE_URL` | Optional override for the OpenAI base URL | unset |
+| `OPENAI_ORG` | Optional OpenAI organization id | unset |
+| `CHATBOT_DEFAULT_MODEL` | Model for plain text questions | `gpt-4o-mini` |
+| `CHATBOT_VISION_MODEL` | Model for requests with images | `CHATBOT_DEFAULT_MODEL` |
+| `CHATBOT_REASONING_MODEL` | Model when PDF text context is supplied | `CHATBOT_DEFAULT_MODEL` |
+| `CHATBOT_MAX_TOKENS` | Max output tokens per response | `1024` |
+| `CHATBOT_REQUEST_TIMEOUT` | OpenAI client timeout in seconds | `20` |
+
+Set these in the environment (or `.env`) that loads the Django settings module.
+
+### Example requests
+
+Plain JSON request:
+
+```bash
+curl -sS -X POST http://localhost:8000/api/v1/chatbot/ask \
+  -H "Content-Type: application/json" \
+  -d '{"message":"سرفه خشک دارم، چه عللی ممکنه داشته باشه؟"}'
+```
+
+Multipart with vision + PDF context:
+
+```bash
+curl -sS -X POST http://localhost:8000/api/v1/chatbot/ask \
+  -F 'message=سلام، خلاصه آزمایش رو می‌دی؟' \
+  -F 'images=@/path/to/scan.png' \
+  -F 'pdfs=@/path/to/report.pdf'
+```
+
+Streaming (Server-Sent Events):
+
+```bash
+curl -N -X POST 'http://localhost:8000/api/v1/chatbot/ask?stream=true' \
+  -H "Content-Type: application/json" \
+  -d '{"message":"نتیجه آزمایش را خلاصه کن"}'
+```
+
+Responses always append a short disclaimer reminding users that the assistant does **not** provide diagnoses or prescriptions and that urgent issues require professional medical care.
+
+### Smart storage
+
+When `SMART_STORAGE_ENABLED=true` the chatbot stores conversations selectively based on consent, intent, and clinical urgency. The following environment flags fine-tune retention:
+
+| Variable | Purpose | Default |
+| --- | --- | --- |
+| `SMART_STORAGE_ENABLED` | Master switch for smart storage | `true` |
+| `SMART_STORAGE_REQUIRE_CONSENT` | Skip persistence unless consent is recorded | `true` |
+| `SMART_STORAGE_DEFAULT_MODE` | Baseline mode when `store="auto"` | `summary` |
+| `SMART_STORAGE_TTL_DAYS` | Database retention period for stored notes | `30` |
+| `SMART_STORAGE_CACHE_TTL_SECONDS` | Cache duration for policy decisions | `86400` |
+| `SMART_STORAGE_MAX_TURNS` | Maximum stored turns per conversation before pruning | `8` |
+| `SMART_STORAGE_MAX_TOKENS` | Approximate cap (characters) before demoting `full` storage | `3000` |
+| `SMART_STORAGE_CLASSIFY_WITH_LLM` | Enable LLM-backed classification fallback | `false` |
+| `SMART_STORAGE_SUMMARIZE_WITH_LLM` | Enable LLM-generated summaries | `false` |
+
+Give consent or revoke it inline via the single `/api/v1/chatbot/ask` endpoint. The same endpoint also supports targeted purge operations for stored notes:
+
+```bash
+# give consent inline and ask
+curl -sX POST http://localhost:8000/api/v1/chatbot/ask \
+  -H "Content-Type: application/json" \
+  -d '{"message":"سرفه خشک ۲ هفته","consent":true,"store":"auto","conversation_id":"<uuid>"}'
+
+# reset/purge notes for a conversation
+curl -sX POST http://localhost:8000/api/v1/chatbot/ask \
+  -H "Content-Type: application/json" \
+  -d '{"conversation_id":"<uuid>","purge":true,"message":"سلام"}'
+```
+
+Stored notes expire automatically. Run the sweep command manually or wire it into Celery beat:
+
+```bash
+python manage.py chatbot_sweep
+
+# Example Celery beat entry (add to CELERY_BEAT_SCHEDULE)
+# "chatbot-smart-storage" : {
+#     "task": "chatbot_sweep",
+#     "schedule": crontab(hour=2, minute=0),
+# }
+```
+
 ## Make targets
 - `make install` – install dependencies and set up git hooks
 - `make run` – start the Django development server
@@ -60,6 +150,12 @@ make redis-up
 - `make format` – auto-format imports via isort
 - `make test` – run the pytest suite
 - `make migrate` – apply database migrations
+
+## Diagnostics & Coverage
+
+- `make diag` regenerates `.reports/diag.json` and writes the curated summary to `docs/DIAG.md`.
+- `make diag-commit` optionally stages `.reports/diag.json` and `docs/DIAG.md` and creates a local commit.
+- Continuous integration enforces at least **80%** test coverage and publishes the HTML report artifact when pipelines run.
 
 ## Observability
 All HTTP responses carry `X-Request-ID` and `X-Response-Time-ms` headers. Structured logs are emitted in JSON with PII masking for sensitive keys (`password`, `token`, `otp`, `national_code`).
