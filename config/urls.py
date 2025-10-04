@@ -43,6 +43,7 @@ urlpatterns = [
         telemedicine_views.bitpay_verify,
         name="telemedicine-bitpay-verify",
     ),
+    path("chatbot/", include("chatbot.urls")),
 ]
 
 if metrics_enabled():
