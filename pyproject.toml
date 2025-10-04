@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "helssa"
-version = "2.2.0"
+version = "2.3.0"
 description = "Helssa 2.0 backend service"
 readme = "README.md"
 authors = [{ name = "Helssa Team" }]
@@ -58,7 +58,7 @@ line_length = 100
 
 [tool.commitizen]
 name = "cz_conventional_commits"
-version = "2.2.0"
+version = "2.3.0"
 version_files = ["pyproject.toml:version"]
 tag_format = "v$version"
 update_changelog_on_bump = true
