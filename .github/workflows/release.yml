@@ -1,7 +1,7 @@
 name: Release (minor bump)
 on:
   push:
-    branches: ["*"]
+    branches: ["**"]
 permissions:
   contents: write
   pull-requests: write
