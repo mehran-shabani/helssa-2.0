@@ -1,5 +1,8 @@
 # Changelog
 
+## v2.3.0 - 2025-10-04
+- chore: reset release baseline to start from v2.3.0 and increment patch versions by 0.01
+
 ## v2.0.0 - 2024-01-01
 - Bootstrap baseline
 ## v2.1.0 - 2025-10-04
