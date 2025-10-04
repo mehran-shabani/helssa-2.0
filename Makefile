@@ -13,7 +13,7 @@ celery:
 	celery -A config.celery:app worker -l info
 
 test:
-	DJANGO_SETTINGS_MODULE=config.settings.test pytest -q
+        DJANGO_SETTINGS_MODULE=config.settings.test BITPAY_WEBHOOK_SECRET=test pytest
 
 lint:
 	ruff check .
@@ -33,10 +33,12 @@ redis-up:
 redis-down:
         docker compose -f docker-compose.dev.yml down --remove-orphans
 
-.PHONY: diag
+.PHONY: diag diag-commit
 diag:
-        python manage.py diag_probe --md || true
-        @echo "Report at .reports/diag.md (and JSON at .reports/diag.json). Copy STDOUT between markers here."
+        python manage.py diag_write
+
+diag-commit:
+        python manage.py diag_write --commit
 
 FILE_REQUIRED_MESSAGE := FILE variable is required. Usage: make save-log-file FILE=path/to/log.txt
 
