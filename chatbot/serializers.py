@@ -18,9 +18,26 @@ class AskSerializer(serializers.Serializer):
         child=serializers.FileField(), required=False, allow_empty=True, default=list
     )
     cache_ttl = serializers.IntegerField(required=False, min_value=1)
+    store = serializers.ChoiceField(
+        choices=tuple((choice, choice) for choice in sorted(settings.SMART_STORAGE_ALLOWED_STORE_VALUES)),
+        required=False,
+        default="auto",
+    )
+    consent = serializers.BooleanField(required=False)
+    purge = serializers.BooleanField(required=False, default=False)
+    source_turn_id = serializers.CharField(required=False, allow_blank=True, max_length=64)
+    conversation_id = serializers.UUIDField(required=False)
+    history = serializers.ListField(child=serializers.DictField(), required=False)
+    reset = serializers.BooleanField(required=False, default=False)
 
     image_types = {"image/jpeg", "image/png", "image/webp"}
     pdf_types = {"application/pdf"}
+
+    def validate_store(self, value: str) -> str:
+        return (value or "auto").lower()
+
+    def validate_source_turn_id(self, value: str) -> str:
+        return value.strip()
 
     def validate_message(self, value: str) -> str:
         value = value.strip()

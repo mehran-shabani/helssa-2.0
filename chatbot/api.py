@@ -3,18 +3,20 @@ from __future__ import annotations
 import base64
 import hashlib
 import json
-import re
-from typing import Any, Dict, Iterator
+from datetime import timedelta
+from typing import Any, Callable, Dict, Iterator, Optional
+from uuid import uuid4
 
 from django.conf import settings
 from django.core.cache import cache
 from django.http import JsonResponse, StreamingHttpResponse
 from django.utils.encoding import force_str
+from django.utils import timezone
 from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
 from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
 
-from .models import Attachment
+from .models import Attachment, ChatConsent, ChatNote
 from .prompt_templates import DISCLAIMER, system_prompt
 from .serializers import AskSerializer
 from .services.client import (
@@ -25,18 +27,10 @@ from .services.client import (
     invoke_response,
 )
 from .services.pdf import extract_text_from_pdf
+from .services.policy import Decision, decide_storage
+from .services.redact import redact_text, scrub_for_cache_key
 from .services.router import select_model
-
-
-def _scrub_for_cache_key(message: str) -> str:
-    patterns = [
-        re.compile(r"\b\d{10,16}\b"),  # possible phone/national numbers
-        re.compile(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}"),
-    ]
-    scrubbed = message
-    for pattern in patterns:
-        scrubbed = pattern.sub("<redacted>", scrubbed)
-    return scrubbed
+from .services.summary import make_note
 
 
 def _format_sse(data: Dict[str, Any]) -> str:
@@ -130,6 +124,9 @@ class ChatbotAskView(APIView):
         mode: str,
         model: str,
         request_id: str,
+        storage_metadata: Optional[Dict[str, Any]] = None,
+        consent_value: Optional[bool] = None,
+        on_complete: Optional[Callable[[str], None]] = None,
     ) -> Iterator[str]:
         answer_parts: list[str] = []
         usage: Dict[str, Any] = {}
@@ -165,16 +162,21 @@ class ChatbotAskView(APIView):
                         usage = _extract_usage(response_obj)
                         if not final_answer:
                             final_answer = "".join(answer_parts)
-                        yield _format_sse(
-                            {
-                                "done": True,
-                                "answer": final_answer,
-                                "usage": usage,
-                                "model": model,
-                                "disclaimer": DISCLAIMER,
-                                "request_id": request_id,
-                            }
-                        )
+                        if on_complete:
+                            on_complete(final_answer)
+                        payload = {
+                            "done": True,
+                            "answer": final_answer,
+                            "usage": usage,
+                            "model": model,
+                            "disclaimer": DISCLAIMER,
+                            "request_id": request_id,
+                        }
+                        if storage_metadata is not None:
+                            payload["storage"] = storage_metadata
+                        if consent_value is not None:
+                            payload["consent"] = consent_value
+                        yield _format_sse(payload)
                         return
                     elif event_type == "response.error":
                         error = getattr(event, "error", None) or (
@@ -226,16 +228,21 @@ class ChatbotAskView(APIView):
                     break
 
         final_answer = "".join(answer_parts)
-        yield _format_sse(
-            {
-                "done": True,
-                "answer": final_answer,
-                "usage": usage,
-                "model": model,
-                "disclaimer": DISCLAIMER,
-                "request_id": request_id,
-            }
-        )
+        if on_complete:
+            on_complete(final_answer)
+        payload = {
+            "done": True,
+            "answer": final_answer,
+            "usage": usage,
+            "model": model,
+            "disclaimer": DISCLAIMER,
+            "request_id": request_id,
+        }
+        if storage_metadata is not None:
+            payload["storage"] = storage_metadata
+        if consent_value is not None:
+            payload["consent"] = consent_value
+        yield _format_sse(payload)
 
     def post(self, request, *args, **kwargs):
         data = request.data.copy() if hasattr(request.data, "copy") else dict(request.data)
@@ -253,16 +260,52 @@ class ChatbotAskView(APIView):
         images = validated.get("images", [])
         pdfs = validated.get("pdfs", [])
         cache_ttl = validated.get("cache_ttl")
+        store_pref: str | None = validated.get("store")
+        consent_update = validated.get("consent")
+        purge_requested: bool = bool(validated.get("purge", False))
+        source_turn_id: str = validated.get("source_turn_id") or ""
+        conversation_uuid = validated.get("conversation_id")
+
+        smart_enabled = getattr(settings, "SMART_STORAGE_ENABLED", False)
+        consent_scope = "medical_history"
+        user_obj = request.user if getattr(request, "user", None) and request.user.is_authenticated else None
+        active_consent = False
+        purged_notes = 0
+
+        if smart_enabled:
+            consent_kwargs = {"user": user_obj, "scope": consent_scope}
+            if consent_update is not None:
+                ChatConsent.objects.update_or_create(
+                    defaults={"granted": bool(consent_update)},
+                    **consent_kwargs,
+                )
+            consent_record = ChatConsent.objects.filter(**consent_kwargs).first()
+            if consent_record:
+                active_consent = bool(consent_record.granted)
+            elif not getattr(settings, "SMART_STORAGE_REQUIRE_CONSENT", True):
+                active_consent = True
+
+            if purge_requested and conversation_uuid:
+                notes_qs = ChatNote.objects.filter(conversation_id=conversation_uuid)
+                if request.user.is_staff:
+                    pass
+                elif user_obj:
+                    notes_qs = notes_qs.filter(user=user_obj)
+                else:
+                    notes_qs = notes_qs.filter(user__isnull=True)
+                purged_notes, _ = notes_qs.delete()
 
         user_content: list[dict[str, Any]] = [
             {"type": "input_text", "text": message},
         ]
 
         has_pdf_text = False
+        pdf_text_total = 0
         for index, pdf in enumerate(pdfs, start=1):
             text = extract_text_from_pdf(pdf)
             if text:
                 has_pdf_text = True
+                pdf_text_total += len(text)
                 user_content.append(
                     {
                         "type": "input_text",
@@ -290,11 +333,23 @@ class ChatbotAskView(APIView):
             has_pdf_text=has_pdf_text,
         )
 
+        attachments_present = bool(images or pdfs)
+        decision: Decision | None = None
+        if smart_enabled:
+            decision = decide_storage(
+                message=message,
+                images=len(images),
+                pdf_text_len=pdf_text_total,
+                consent=active_consent,
+                requested=store_pref,
+                django_settings=settings,
+            )
+
         cache_key = None
         cached_payload = None
         cache_status = "miss"
         if cache_ttl and not images and not pdfs:
-            scrubbed = _scrub_for_cache_key(message)
+            scrubbed = scrub_for_cache_key(message)
             key_material = f"{model}|{scrubbed}"
             digest = hashlib.sha256(key_material.encode("utf-8")).hexdigest()
             cache_key = f"chatbot:{digest}"
@@ -356,6 +411,59 @@ class ChatbotAskView(APIView):
 
         request_id = self._get_request_id(request)
 
+        storage_metadata: Optional[Dict[str, Any]] = None
+        if smart_enabled and decision is not None:
+            storage_metadata = {
+                "mode": decision.mode,
+                "tags": decision.tags,
+                "reason": decision.reason,
+            }
+            if purge_requested:
+                storage_metadata["purged"] = purged_notes
+
+        def persist_storage(answer_text: str) -> None:
+            nonlocal conversation_uuid, storage_metadata
+            if not smart_enabled or decision is None or decision.mode == "none":
+                return
+            target_conversation = conversation_uuid or uuid4()
+            conversation_uuid = target_conversation
+            title, note_summary = make_note(message, answer_text)
+            if decision.mode == "full":
+                redacted_user = redact_text(message)
+                redacted_answer = redact_text(answer_text)
+                raw_block = f"```raw\nUser: {redacted_user}\nAssistant: {redacted_answer}\n```"
+                note_summary = f"{note_summary}\n\n{raw_block}".strip()
+            retention_days = getattr(settings, "SMART_STORAGE_TTL_DAYS", 30)
+            retention_at = timezone.now() + timedelta(days=max(retention_days, 1))
+            ChatNote.objects.create(
+                conversation_id=target_conversation,
+                user=user_obj,
+                title=title,
+                summary=note_summary,
+                tags=decision.tags,
+                source_turn_id=source_turn_id[:64],
+                attachments_present=attachments_present,
+                retention_at=retention_at,
+            )
+            max_turns = getattr(settings, "SMART_STORAGE_MAX_TURNS", 0)
+            if max_turns and target_conversation:
+                extra_ids = list(
+                    ChatNote.objects.filter(
+                        conversation_id=target_conversation,
+                        user=user_obj,
+                    )
+                    .order_by("-created_at")
+                    .values_list("id", flat=True)[max_turns:]
+                )
+                if extra_ids:
+                    ChatNote.objects.filter(id__in=extra_ids).delete()
+            if storage_metadata is not None:
+                storage_metadata["mode"] = decision.mode
+                storage_metadata["tags"] = decision.tags
+                storage_metadata["reason"] = decision.reason
+                storage_metadata["conversation_id"] = str(target_conversation)
+
+
         if stream:
             streaming_response = StreamingHttpResponse(
                 self._collect_stream_events(
@@ -363,6 +471,9 @@ class ChatbotAskView(APIView):
                     mode=mode,
                     model=model,
                     request_id=request_id,
+                    storage_metadata=storage_metadata,
+                    consent_value=active_consent if smart_enabled else None,
+                    on_complete=persist_storage,
                 ),
                 content_type="text/event-stream",
             )
@@ -372,6 +483,7 @@ class ChatbotAskView(APIView):
 
         answer_text = _extract_text_from_response(result)
         usage = _extract_usage(result)
+        persist_storage(answer_text)
         payload = {
             "answer": answer_text,
             "model": getattr(result, "model", model),
@@ -379,6 +491,10 @@ class ChatbotAskView(APIView):
             "disclaimer": DISCLAIMER,
             "request_id": request_id,
         }
+
+        if smart_enabled and storage_metadata is not None:
+            payload["storage"] = storage_metadata
+            payload["consent"] = active_consent
 
         if cache_key and cache_ttl:
             cache_status = "miss"
