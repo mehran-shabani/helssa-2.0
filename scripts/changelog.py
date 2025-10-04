@@ -17,8 +17,10 @@ def last_tag() -> str:
         return ""
 
 def commits_since(tag: str) -> list[str]:
-    rev = f"{tag}.." if tag else ""
-    out = subprocess.check_output(["git", "log", "--pretty=%s", rev], text=True)
+    command = ["git", "log", "--pretty=%s"]
+    if tag:
+        command.append(f"{tag}..")
+    out = subprocess.check_output(command, text=True)
     return [line.strip() for line in out.splitlines() if line.strip()]
 
 def group(commits: Iterable[str]) -> dict[str, list[str]]:
