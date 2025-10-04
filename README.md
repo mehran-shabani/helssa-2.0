@@ -52,6 +52,54 @@ make redis-up
 - OpenAPI schema: `/api/schema/`
 - Swagger UI: `/api/docs/`
 
+## Chatbot API
+
+Helssa ships with a single multimodal medical Q&A endpoint that proxies to OpenAI models.
+
+### Environment variables
+
+| Variable | Purpose | Default |
+| --- | --- | --- |
+| `OPENAI_API_KEY` | API key passed to the OpenAI SDK | `""` |
+| `OPENAI_BASE_URL` | Optional override for the OpenAI base URL | unset |
+| `OPENAI_ORG` | Optional OpenAI organization id | unset |
+| `CHATBOT_DEFAULT_MODEL` | Model for plain text questions | `gpt-4o-mini` |
+| `CHATBOT_VISION_MODEL` | Model for requests with images | `CHATBOT_DEFAULT_MODEL` |
+| `CHATBOT_REASONING_MODEL` | Model when PDF text context is supplied | `CHATBOT_DEFAULT_MODEL` |
+| `CHATBOT_MAX_TOKENS` | Max output tokens per response | `1024` |
+| `CHATBOT_REQUEST_TIMEOUT` | OpenAI client timeout in seconds | `20` |
+
+Set these in the environment (or `.env`) that loads the Django settings module.
+
+### Example requests
+
+Plain JSON request:
+
+```bash
+curl -sS -X POST http://localhost:8000/api/v1/chatbot/ask \
+  -H "Content-Type: application/json" \
+  -d '{"message":"سرفه خشک دارم، چه عللی ممکنه داشته باشه؟"}'
+```
+
+Multipart with vision + PDF context:
+
+```bash
+curl -sS -X POST http://localhost:8000/api/v1/chatbot/ask \
+  -F 'message=سلام، خلاصه آزمایش رو می‌دی؟' \
+  -F 'images=@/path/to/scan.png' \
+  -F 'pdfs=@/path/to/report.pdf'
+```
+
+Streaming (Server-Sent Events):
+
+```bash
+curl -N -X POST 'http://localhost:8000/api/v1/chatbot/ask?stream=true' \
+  -H "Content-Type: application/json" \
+  -d '{"message":"نتیجه آزمایش را خلاصه کن"}'
+```
+
+Responses always append a short disclaimer reminding users that the assistant does **not** provide diagnoses or prescriptions and that urgent issues require professional medical care.
+
 ## Make targets
 - `make install` – install dependencies and set up git hooks
 - `make run` – start the Django development server
