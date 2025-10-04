@@ -83,3 +83,21 @@
 - Update README.md
 - Initial commit
 
+## v2.2.0 - 2025-10-04
+### feat
+- feat(chatbot): add consent-aware smart storage
+- feat: add multimodal chatbot endpoint
+- feat: enforce coverage and add diagnostics writer
+
+### fix
+- fix: handle changelog without tags
+
+### other
+- Merge pull request #26 from mehran-shabani/codex/fix-git-error-in-changelog-script
+- [skip ci] chore(release): v2.1.0
+- Merge pull request #25 from mehran-shabani/codex/add-smart-storage-to-chatbot-app
+- Update release.yml
+- Update release.yml
+- Merge pull request #24 from mehran-shabani/codex/implement-multimodal-chatbot-api
+- Merge pull request #21 from mehran-shabani/codex/tighten-quality-gates-and-add-diagnostic-writer
+
