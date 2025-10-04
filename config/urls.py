@@ -9,6 +9,8 @@ from apps.system.views import SystemHealthView, SystemReadyView
 from certificate.api import CertificateViewSet
 from doctor_online.api import VisitViewSet
 from down.api import APKStatsViewSet
+
+from chatbot.api import ChatbotAskView
 from perf.metrics import metrics_enabled
 from sub.api import MeSubscriptionView
 from telemedicine import views as telemedicine_views
@@ -27,6 +29,7 @@ urlpatterns = [
     path("api/v1/system/ready", SystemReadyView.as_view(), name="system-ready"),
     path("api/v1/subscriptions/me", MeSubscriptionView.as_view(), name="subscriptions-me"),
     path("api/v1/", include(router.urls)),
+    path("api/v1/chatbot/ask", ChatbotAskView.as_view(), name="chatbot-ask"),
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
     path(
         "api/docs/",

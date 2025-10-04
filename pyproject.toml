@@ -28,6 +28,8 @@ dependencies = [
   "uvicorn[standard]",
   "whitenoise",
   "psycopg[binary]",
+  "openai>=1.52.0",
+  "pypdf>=4.2",
 ]
 
 [project.optional-dependencies]
