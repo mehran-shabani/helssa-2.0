@@ -1,22 +1,22 @@
-# Repository Structure Report (2025-10-03 19:48:51Z)
+# Repository Structure Report (2025-10-03 20:15:49Z)
 
 - **Version:** v0.0.0
 - **Branch:** work
 - **Recent commits:**
-  - 5ceb6cf Merge pull request #15 from mehran-shabani/codex/add-generic-log-capture-utility
-  - 0f070a6 chore: add log capture utility
-  - 39426af Merge pull request #14 from mehran-shabani/codex/stabilize-helssa-dev-environment
-  - 8cf6a70 Update apps/ops/management/commands/bootstrap_dev.py
-  - b85ef55 feat: add dev bootstrap helpers
+  - 7bbb4c4 Merge pull request #17 from mehran-shabani/codex/cleanup-repo-and-scaffold-new-apps
+  - 63b1bc6 Update tests/domains/test_doctor_online_api.py
+  - a93af14 Update tests/domains/test_certificate_api.py
+  - 1916d21 Update tests/domains/test_doctor_online_api.py
+  - 8a53a0c Update sub/api.py
 
 ## Summary
 | Metric | Value |
 | --- | --- |
-| Total files | 88 |
-| Total size | 98.6 KB |
-| Total LOC | 2991 |
-| Python files | 64 |
-| Test files | 10 |
+| Total files | 120 |
+| Total size | 123.8 KB |
+| Total LOC | 3646 |
+| Python files | 100 |
+| Test files | 13 |
 
 ## Tree View
 ```text
@@ -58,6 +58,22 @@ helssa-2.0
 │   └── system
 │       ├── __init__.py
 │       └── views.py
+├── certificate
+│   ├── migrations
+│   │   ├── 0001_initial.py
+│   │   └── __init__.py
+│   ├── __init__.py
+│   ├── admin.py
+│   ├── api.py
+│   ├── apps.py
+│   └── models.py
+├── chatbot
+│   ├── migrations
+│   │   ├── 0001_initial.py
+│   │   └── __init__.py
+│   ├── __init__.py
+│   ├── apps.py
+│   └── services.py
 ├── config
 │   ├── settings
 │   │   ├── base.py
@@ -75,12 +91,25 @@ helssa-2.0
 │   ├── __init__.py
 │   └── logging.py
 ├── docs
-├── helssa.egg-info
-│   ├── dependency_links.txt
-│   ├── PKG-INFO
-│   ├── requires.txt
-│   ├── SOURCES.txt
-│   └── top_level.txt
+│   └── REPO_STRUCTURE.md
+├── doctor_online
+│   ├── migrations
+│   │   ├── 0001_initial.py
+│   │   └── __init__.py
+│   ├── __init__.py
+│   ├── admin.py
+│   ├── api.py
+│   ├── apps.py
+│   └── models.py
+├── down
+│   ├── migrations
+│   │   ├── 0001_initial.py
+│   │   └── __init__.py
+│   ├── __init__.py
+│   ├── admin.py
+│   ├── api.py
+│   ├── apps.py
+│   └── models.py
 ├── perf
 │   ├── management
 │   │   ├── commands
@@ -98,6 +127,15 @@ helssa-2.0
 │   ├── repo_tree_report.py
 │   ├── save_log.py
 │   └── setup.sh
+├── sub
+│   ├── migrations
+│   │   ├── 0001_initial.py
+│   │   └── __init__.py
+│   ├── __init__.py
+│   ├── admin.py
+│   ├── api.py
+│   ├── apps.py
+│   └── models.py
 ├── telemedicine
 │   ├── gateway
 │   │   ├── __init__.py
@@ -116,6 +154,10 @@ helssa-2.0
 │   ├── api
 │   │   ├── test_analytics_endpoints.py
 │   │   └── test_system_endpoints.py
+│   ├── domains
+│   │   ├── test_certificate_api.py
+│   │   ├── test_doctor_online_api.py
+│   │   └── test_sub_api.py
 │   ├── payments
 │   │   ├── __init__.py
 │   │   ├── test_idempotency.py
@@ -151,11 +193,11 @@ helssa-2.0
 | .github/dependabot.yml | YAML | 10 | 197 B |  |
 | .github/workflows/ci.yml | YAML | 27 | 676 B |  |
 | .github/workflows/release.yml | YAML | 36 | 1.1 KB |  |
-| .gitignore | Other | 17 | 187 B |  |
+| .gitignore | Other | 26 | 296 B |  |
 | .pre-commit-config.yaml | YAML | 15 | 366 B |  |
 | CHANGELOG.md | Markdown | 4 | 57 B | Changelog |
 | Makefile | Other | 59 | 1.5 KB |  |
-| README.md | Markdown | 134 | 5.3 KB | Helssa 2.0 |
+| README.md | Markdown | 141 | 5.6 KB | Helssa 2.0 |
 | analytics/__init__.py | Python | 1 | 31 B | Analytics domain models. |
 | analytics/admin.py | Python | 16 | 417 B |  |
 | analytics/api.py | Python | 105 | 4.2 KB |  |
@@ -175,24 +217,46 @@ helssa-2.0
 | apps/ops/management/commands/diag_probe.py | Python | 252 | 8.9 KB |  |
 | apps/system/__init__.py | Python | 0 | 0 B |  |
 | apps/system/views.py | Python | 143 | 6.8 KB |  |
+| certificate/__init__.py | Python | 0 | 0 B |  |
+| certificate/admin.py | Python | 5 | 100 B |  |
+| certificate/api.py | Python | 31 | 1.5 KB |  |
+| certificate/apps.py | Python | 6 | 154 B |  |
+| certificate/migrations/0001_initial.py | Python | 30 | 972 B |  |
+| certificate/migrations/__init__.py | Python | 0 | 0 B |  |
+| certificate/models.py | Python | 9 | 336 B |  |
+| chatbot/__init__.py | Python | 0 | 0 B |  |
+| chatbot/apps.py | Python | 6 | 146 B |  |
+| chatbot/migrations/0001_initial.py | Python | 9 | 137 B |  |
+| chatbot/migrations/__init__.py | Python | 0 | 0 B |  |
+| chatbot/services.py | Python | 20 | 1.0 KB |  |
 | config/__init__.py | Python | 3 | 65 B |  |
 | config/asgi.py | Python | 9 | 226 B |  |
 | config/celery.py | Python | 8 | 225 B |  |
-| config/settings/base.py | Python | 162 | 5.0 KB |  |
+| config/settings/base.py | Python | 167 | 5.0 KB |  |
 | config/settings/dev.py | Python | 5 | 129 B |  |
 | config/settings/prod.py | Python | 10 | 334 B |  |
 | config/settings/test.py | Python | 17 | 520 B |  |
-| config/urls.py | Python | 42 | 1.5 KB |  |
+| config/urls.py | Python | 50 | 2.0 KB |  |
 | config/wsgi.py | Python | 9 | 227 B |  |
 | core/__init__.py | Python | 1 | 37 B | Core infrastructure utilities. |
 | core/logging.py | Python | 38 | 1.3 KB |  |
 | core/middleware/request_id.py | Python | 20 | 657 B |  |
 | docker-compose.dev.yml | YAML | 9 | 165 B |  |
-| helssa.egg-info/PKG-INFO | Other | 103 | 3.5 KB |  |
-| helssa.egg-info/SOURCES.txt | Text | 22 | 463 B |  |
-| helssa.egg-info/dependency_links.txt | Text | 1 | 1 B |  |
-| helssa.egg-info/requires.txt | Text | 21 | 237 B |  |
-| helssa.egg-info/top_level.txt | Text | 5 | 33 B |  |
+| docs/REPO_STRUCTURE.md | Markdown | 330 | 12.1 KB | Repository Structure Report (2025-10-03 20:15:35Z) |
+| doctor_online/__init__.py | Python | 0 | 0 B |  |
+| doctor_online/admin.py | Python | 5 | 88 B |  |
+| doctor_online/api.py | Python | 17 | 514 B |  |
+| doctor_online/apps.py | Python | 6 | 157 B |  |
+| doctor_online/migrations/0001_initial.py | Python | 31 | 976 B |  |
+| doctor_online/migrations/__init__.py | Python | 0 | 0 B |  |
+| doctor_online/models.py | Python | 10 | 322 B |  |
+| down/__init__.py | Python | 0 | 0 B |  |
+| down/admin.py | Python | 5 | 108 B |  |
+| down/api.py | Python | 17 | 550 B |  |
+| down/apps.py | Python | 6 | 140 B |  |
+| down/migrations/0001_initial.py | Python | 19 | 590 B |  |
+| down/migrations/__init__.py | Python | 0 | 0 B |  |
+| down/models.py | Python | 7 | 227 B |  |
 | manage.py | Python | 14 | 286 B | !/usr/bin/env python |
 | perf/__init__.py | Python | 0 | 0 B |  |
 | perf/apps.py | Python | 6 | 140 B |  |
@@ -209,6 +273,13 @@ helssa-2.0
 | scripts/repo_tree_report.py | Python | 193 | 8.5 KB | Generate a repository structure report in Markdown. |
 | scripts/save_log.py | Python | 117 | 3.5 KB | Save diagnostic logs to docs/PROJECT_LOG.md and project_logs/. |
 | scripts/setup.sh | Shell | 27 | 667 B |  |
+| sub/__init__.py | Python | 0 | 0 B |  |
+| sub/admin.py | Python | 6 | 142 B |  |
+| sub/api.py | Python | 32 | 1.7 KB |  |
+| sub/apps.py | Python | 6 | 138 B |  |
+| sub/migrations/0001_initial.py | Python | 44 | 1.5 KB |  |
+| sub/migrations/__init__.py | Python | 0 | 0 B |  |
+| sub/models.py | Python | 14 | 508 B |  |
 | telemedicine/__init__.py | Python | 0 | 0 B |  |
 | telemedicine/admin.py | Python | 16 | 445 B |  |
 | telemedicine/apps.py | Python | 6 | 156 B |  |
@@ -222,6 +293,9 @@ helssa-2.0
 | telemedicine/views.py | Python | 170 | 5.9 KB |  |
 | tests/api/test_analytics_endpoints.py | Python | 54 | 2.2 KB |  |
 | tests/api/test_system_endpoints.py | Python | 89 | 3.5 KB |  |
+| tests/domains/test_certificate_api.py | Python | 51 | 2.4 KB |  |
+| tests/domains/test_doctor_online_api.py | Python | 41 | 1.6 KB |  |
+| tests/domains/test_sub_api.py | Python | 15 | 512 B |  |
 | tests/payments/__init__.py | Python | 0 | 0 B |  |
 | tests/payments/test_idempotency.py | Python | 53 | 2.0 KB |  |
 | tests/payments/test_signature_and_errors.py | Python | 82 | 2.6 KB |  |
@@ -247,6 +321,7 @@ helssa-2.0
   - `health`
   - `api/v1/system/health`
   - `api/v1/system/ready`
+  - `api/v1/subscriptions/me`
   - `api/v1/`
   - `api/schema/`
   - `api/docs/`
